@@ -16,6 +16,7 @@ export const state = {
   graph:  { size: 9, extra: 0.35, negativeCycle: false, cache: null, key: '' },
   tree:   { size: 10, sorted: false, values: null, target: null },
   string: { text: 'ABACADABRABRACADABRA', pattern: 'ABRA' },
+  words:  { list: 'CAT, CAR, CARD, CARE, DOG, DO, DONE', target: 'CARD' },
   queens: { n: 8, findAll: false },
   sudoku: { which: 'easy' },
   hanoi:  { n: 4 },
@@ -37,6 +38,15 @@ export const state = {
     diagonal: false,
   },
 };
+
+/** Split a free-text list into clean, de-duplicated uppercase words. */
+function parseWords(text) {
+  const seen = new Set();
+  for (const w of String(text).toUpperCase().split(/[^A-Z]+/)) {
+    if (w) seen.add(w.slice(0, 14));
+  }
+  return [...seen].slice(0, 14);
+}
 
 /* ───────────────────── sudoku puzzles ──────────────────── */
 
@@ -394,6 +404,48 @@ const builders = {
       box.append(hint);
     }
     return () => ({ array: s.data, target: s.target });
+  },
+
+  /* ── a list of words, for tries ── */
+  words(box, algo, rerun) {
+    const s = state.words;
+    const wantsTarget = algo.id === 'trie-search';
+
+    const listField = field('words');
+    const listInput = el('input');
+    listInput.type = 'text';
+    listInput.style.width = '300px';
+    listInput.value = s.list;
+    listInput.addEventListener('input', () => { s.list = listInput.value; rerun(); });
+    listField.append(listInput);
+    box.append(listField);
+
+    if (wantsTarget) {
+      const tf = field('look up');
+      const ti = el('input');
+      ti.type = 'text';
+      ti.style.width = '110px';
+      ti.value = s.target;
+      ti.addEventListener('input', () => { s.target = ti.value.toUpperCase(); ti.value = s.target; rerun(); });
+      tf.append(ti);
+      box.append(tf);
+    }
+
+    box.append(
+      button('shared prefixes', () => { s.list = 'CAT, CAR, CARD, CARE, CARGO, CAT'; s.target = 'CAR'; rebuild(box, algo, rerun); }),
+      button('nothing in common', () => { s.list = 'APPLE, BANANA, CHERRY, DATE'; s.target = 'BANANA'; rebuild(box, algo, rerun); }),
+    );
+
+    if (wantsTarget) {
+      const hint = el('span', 'field', 'try a word that is only a prefix — "CAR" when CARD is stored');
+      hint.style.opacity = '.7';
+      box.append(hint);
+    }
+
+    return () => ({
+      words: parseWords(s.list),
+      target: (s.target || '').toUpperCase(),
+    });
   },
 
   /* ── text + pattern, for string matching ── */

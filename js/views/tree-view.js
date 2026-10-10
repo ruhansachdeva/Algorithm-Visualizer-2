@@ -32,7 +32,7 @@ const PAD_BOTTOM = 26;
  * Give every node an (x, depth). Children are placed first, then the
  * parent is centred over them — the classic tidy-tree trick.
  */
-function layoutTree(nodes, root) {
+function layoutTree(nodes, root, binary) {
   const pos = new Map();
   let cursor = 0;
   let maxDepth = 0;
@@ -56,8 +56,10 @@ function layoutTree(nodes, root) {
       if (k !== null && k !== undefined) xs.push(pos.get(k).x);
     }
 
-    if (real.length === 1) {
-      // Offset the parent so a lone child visibly hangs left or right.
+    if (binary && real.length === 1) {
+      // In a BINARY tree, offset the parent so a lone child visibly hangs
+      // left or right. In an n-ary tree (a trie) there are no such slots,
+      // so the parent just sits centred over its only child.
       const onLeft = kids.indexOf(real[0]) === 0;
       pos.set(i, { x: xs[0] + (onLeft ? 0.5 : -0.5), depth });
     } else {
@@ -72,14 +74,14 @@ function layoutTree(nodes, root) {
 export function drawTree(canvas, frame) {
   const { ctx, w, h } = fitCanvas(canvas);
   const C = colors();
-  const { nodes, root, states } = frame;
+  const { nodes, root, states, binary = true } = frame;
 
   if (root === null || root === undefined || !nodes?.length) {
     label(ctx, frame.emptyText || 'the tree is empty', w / 2, h / 2, { size: 13, color: C.faint, mono: false });
     return;
   }
 
-  const { pos, maxDepth, width } = layoutTree(nodes, root);
+  const { pos, maxDepth, width } = layoutTree(nodes, root, binary);
 
   const usableW = w - PAD_X * 2;
   const usableH = h - PAD_TOP - PAD_BOTTOM;

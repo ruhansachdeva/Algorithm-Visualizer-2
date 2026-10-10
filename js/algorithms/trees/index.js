@@ -9,6 +9,7 @@
    ============================================================ */
 
 import { T, TREE_LEGEND } from '../../views/tree-view.js';
+import { TRIES } from './trie.js';
 
 const base = { view: 'tree', input: 'tree', legend: TREE_LEGEND };
 
@@ -585,4 +586,4 @@ const heap = {
   },
 };
 
-export const TREES = [insert, search, remove, inorder, preorder, postorder, levelorder, avl, heap];
+export const TREES = [insert, search, remove, inorder, preorder, postorder, levelorder, avl, heap, ...TRIES];
