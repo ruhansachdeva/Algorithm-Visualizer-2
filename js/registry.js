@@ -8,12 +8,14 @@ import { SEARCHING } from './algorithms/searching/index.js';
 import { PATHFINDING } from './algorithms/graphs/grid.js';
 import { GRAPHS } from './algorithms/graphs/graph.js';
 import { TREES } from './algorithms/trees/index.js';
+import { DP } from './algorithms/dp/index.js';
 import { MAZES } from './algorithms/graphs/maze.js';
 
 import { drawArray } from './views/array-view.js';
 import { drawGrid, cellAt } from './views/grid-view.js';
 import { drawGraph } from './views/graph-view.js';
 import { drawTree } from './views/tree-view.js';
+import { drawTable } from './views/table-view.js';
 
 export const CATEGORIES = [
   { id: 'sorting',     name: 'Sorting',     algorithms: SORTING },
@@ -21,6 +23,7 @@ export const CATEGORIES = [
   { id: 'pathfinding', name: 'Pathfinding', algorithms: PATHFINDING },
   { id: 'graphs',      name: 'Graphs',      algorithms: GRAPHS },
   { id: 'trees',       name: 'Trees',       algorithms: TREES },
+  { id: 'dp',          name: 'Dynamic Programming', algorithms: DP },
   { id: 'mazes',       name: 'Maze Generation', algorithms: MAZES },
 ];
 
@@ -30,6 +33,7 @@ export const VIEWS = {
   grid: drawGrid,
   graph: drawGraph,
   tree: drawTree,
+  table: drawTable,
 };
 
 /** view name -> how a mouse maps onto that view (optional) */
