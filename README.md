@@ -9,16 +9,29 @@ arrows under numbers.
 
 ## Running it
 
-There is no build step, no `npm install`, no toolchain. Two options:
+There is no build step, no `npm install`, no toolchain — but it does need to
+be served over `http://`, not opened as a file.
 
-**Double-click `index.html`.** Works for everything.
+**Double-click `start.command`.** It starts a local server and opens your
+browser. Leave the Terminal window it opens alone while you use the app; close
+it when you're done.
 
-**Or serve it locally** (nicer, and how I test it):
+Or do the same thing by hand:
 
 ```sh
 python3 -m http.server 8000
 # then open http://localhost:8000
 ```
+
+In VS Code, the **Live Server** extension works too: right-click `index.html`
+→ *Open with Live Server*.
+
+> **Why not just double-click `index.html`?**
+> The page would load but nothing would happen. The code is split across
+> JavaScript modules, and browsers refuse to load modules from a `file://`
+> path — a security rule called CORS. Serving the folder over `localhost`
+> satisfies it. Nothing is uploaded anywhere; the server only talks to your
+> own machine.
 
 ## Controls
 
@@ -103,6 +116,7 @@ reading an ordinary implementation.
 ### Layout
 
 ```
+start.command           double-click to run it
 index.html              page shell
 css/style.css           all styling; colors are CSS variables at the top
 js/
