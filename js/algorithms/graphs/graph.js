@@ -585,4 +585,113 @@ const cycleDetect = {
   },
 };
 
-export const GRAPHS = [bfs, dfs, dijkstra, bellmanFord, topo, unionFind, kruskal, prim, cycleDetect];
+
+/* ─────────────── Tarjan's Strongly-Connected Components ─────────────── */
+
+const tarjan = {
+  ...base,
+  id: 'graph-tarjan',
+  legend: [
+    ['--c-swap',    'on the stack right now'],
+    ['--c-compare', 'edge being followed'],
+    ['--c-swap',    'edge into a finished component'],
+    ['#4da3ff',     'each colour is one component'],
+  ],
+  name: "Tarjan's SCC",
+  about: 'Finds every group of nodes that can all reach each other — the circular parts of a one-way graph. It gives each node a discovery number and a "lowlink": the smallest number reachable from it without leaving the current stack. When a node\'s lowlink equals its own number, it is the root of a component, and everything above it on the stack is that component. One depth-first pass, no repeats.',
+  cost: { best: 'O(V + E)', avg: 'O(V + E)', worst: 'O(V + E)', space: 'O(V)', stable: '—' },
+  graph: { directed: true, weighted: false },
+  pseudocode: [
+    'give each node a discovery number as you first reach it',
+    'lowlink = the smallest number reachable from here via the stack',
+    'after visiting a child, take the smaller of the two lowlinks',
+    'if a neighbour is already on the stack, use its discovery number',
+    'when lowlink == own number, pop the stack down to here:',
+    '  that is one complete component',
+  ],
+  *run(inp) {
+    const n = inp.nodes.length;
+    const ns = blankN(inp), es = blankE(inp);
+    const index = new Int32Array(n).fill(-1);
+    const low = new Int32Array(n).fill(-1);
+    const onStack = new Uint8Array(n);
+    const group = new Int32Array(n).fill(-1);
+    const stack = [];
+    let counter = 0, components = 0;
+
+    // "4/2" means: found fourth, can reach back as far as the second.
+    const labels = () => Array.from({ length: n }, (_, i) =>
+      index[i] < 0 ? '' : `${index[i]}/${low[i]}`);
+
+    const frame = (extra) => gf(inp, ns, es, {
+      nodeLabel: labels(),
+      nodeGroup: Array.from(group),
+      stats: { visited: counter, 'on stack': stack.length, components },
+      ...extra,
+    });
+
+    yield frame({ line: 0, note: 'numbering nodes as we first reach them' });
+
+    function* strongconnect(u) {
+      index[u] = low[u] = counter++;
+      stack.push(u);
+      onStack[u] = 1;
+      ns[u] = N.CURRENT;
+      yield frame({ line: 0, note: `${nm(inp, u)} is number ${index[u]} — pushed on the stack` });
+
+      for (const { to, edge } of inp.adj[u]) {
+        es[edge] = E.LOOKING;
+
+        if (index[to] === -1) {
+          yield frame({ line: 2, note: `${nm(inp, to)} is new — go deeper` });
+          es[edge] = E.CHOSEN;
+          yield* strongconnect(to);
+          low[u] = Math.min(low[u], low[to]);
+          yield frame({ line: 2, note: `back at ${nm(inp, u)}: its lowlink becomes ${low[u]}` });
+        } else if (onStack[to]) {
+          low[u] = Math.min(low[u], index[to]);
+          es[edge] = E.CHOSEN;
+          yield frame({ line: 3, note: `${nm(inp, to)} is still on the stack — ${nm(inp, u)} can loop back to ${index[to]}` });
+        } else {
+          // already settled into an earlier component; ignore it
+          es[edge] = E.REJECTED;
+          yield frame({ line: 3, note: `${nm(inp, to)} already belongs to a finished component — ignore` });
+        }
+      }
+
+      if (low[u] === index[u]) {
+        const members = [];
+        let w;
+        do {
+          w = stack.pop();
+          onStack[w] = 0;
+          group[w] = components;
+          ns[w] = N.DONE;
+          members.push(nm(inp, w));
+        } while (w !== u);
+        components++;
+        yield frame({
+          line: 4,
+          note: `${nm(inp, u)}'s lowlink equals its own number — component ${components}: {${members.reverse().join(', ')}}`,
+        });
+      }
+    }
+
+    for (let i = 0; i < n; i++) {
+      if (index[i] === -1) yield* strongconnect(i);
+    }
+
+    const sizes = {};
+    for (let i = 0; i < n; i++) sizes[group[i]] = (sizes[group[i]] || 0) + 1;
+    const cyclic = Object.values(sizes).filter((v) => v > 1).length;
+
+    yield frame({
+      note: `${components} component${components === 1 ? '' : 's'}` +
+        (cyclic
+          ? ` — ${cyclic === 1 ? 'one of them contains' : `${cyclic} of them contain`} a cycle`
+          : ' — no cycles, every node stands alone'),
+    });
+  },
+};
+
+export const GRAPHS = [bfs, dfs, dijkstra, bellmanFord, topo, unionFind, kruskal, prim, cycleDetect, tarjan];

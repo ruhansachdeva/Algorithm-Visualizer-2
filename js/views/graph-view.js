@@ -24,10 +24,16 @@ export const E = { IDLE: 0, LOOKING: 1, CHOSEN: 2, REJECTED: 3 };
 
 const PAD = 42;
 
+/** Distinct fills for group-coloured graphs, readable in both themes. */
+const GROUP_COLORS = [
+  '#4da3ff', '#3ddc84', '#ffc53d', '#c678dd',
+  '#ff8c42', '#2dd4bf', '#f472b6', '#a3e635',
+];
+
 export function drawGraph(canvas, frame) {
   const { ctx, w, h } = fitCanvas(canvas);
   const C = colors();
-  const { nodes, edges, nodeState, edgeState, nodeLabel, directed, weighted } = frame;
+  const { nodes, edges, nodeState, edgeState, nodeLabel, nodeGroup, directed, weighted } = frame;
   if (!nodes?.length) return;
 
   // Positions are computed once, the first time a graph is drawn, and then
@@ -101,13 +107,21 @@ export function drawGraph(canvas, frame) {
     const st = nodeState ? nodeState[i] : N.IDLE;
     const x = px(n), y = py(n);
 
-    circle(ctx, x, y, R, nodeColor[st] ?? C.sunken);
-    strokeCircle(ctx, x, y, R, st === N.IDLE ? C.border : 'transparent', 1.5);
+    // `nodeGroup` colours nodes by which group they belong to (e.g. which
+    // strongly-connected component), overriding the usual state colour.
+    const group = nodeGroup ? nodeGroup[i] : -1;
+    const fill = group >= 0 ? GROUP_COLORS[group % GROUP_COLORS.length]
+                            : (nodeColor[st] ?? C.sunken);
+
+    circle(ctx, x, y, R, fill);
+    strokeCircle(ctx, x, y, R,
+      st === N.CURRENT && group >= 0 ? C.text : st === N.IDLE && group < 0 ? C.border : 'transparent',
+      st === N.CURRENT && group >= 0 ? 2.5 : 1.5);
 
     label(ctx, n.name, x, y, {
       size: Math.min(13, R * 0.8),
       weight: 700,
-      color: st === N.IDLE ? C.dim : '#0d1117',
+      color: st === N.IDLE && group < 0 ? C.dim : '#0d1117',
     });
 
     // distance / extra info under the node

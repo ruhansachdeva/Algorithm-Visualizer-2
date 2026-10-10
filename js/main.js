@@ -242,7 +242,9 @@ function renderLegend(entries = []) {
     item.className = 'legend-item';
     const sw = document.createElement('span');
     sw.className = 'legend-swatch';
-    sw.style.background = palette(varName);
+    // '--c-foo' reads the theme variable; anything else is used verbatim,
+    // which lets an algorithm name a colour the theme doesn't define.
+    sw.style.background = varName.startsWith('--') ? palette(varName) : varName;
     item.append(sw, Object.assign(document.createElement('span'), { textContent: text }));
     dom.legend.append(item);
   }
