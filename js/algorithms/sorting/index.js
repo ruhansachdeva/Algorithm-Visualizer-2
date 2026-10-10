@@ -998,9 +998,219 @@ const bogo = {
   },
 };
 
+
+/* ───────────────────────── Timsort ─────────────────────── */
+
+/* Real Timsort uses 32 here. Lowered so that merging is visible on the
+   small arrays this visualizer works with — with a threshold of 32, any
+   array under 32 items would be sorted by one insertion pass and you
+   would never see a merge. */
+const MIN_MERGE = 8;
+
+/**
+ * Pick a run length so that the number of runs is at or just below a
+ * power of two — which is what keeps the merges balanced.
+ */
+function minRunLength(n) {
+  let r = 0;
+  while (n >= MIN_MERGE) {
+    r |= n & 1;
+    n >>= 1;
+  }
+  return n + r;
+}
+
+const timsort = {
+  ...base,
+  id: 'timsort',
+  name: 'Timsort',
+  about: 'The sort actually used by Python, Java and Swift. It is built on the observation that real data is rarely shuffled — it arrives in already-ordered stretches. Timsort finds those natural runs, extends the short ones with insertion sort, and merges them in an order that keeps the merges balanced. On already-sorted input it finds one run and stops in a single pass.',
+  cost: { best: 'O(n)', avg: 'O(n log n)', worst: 'O(n log n)', space: 'O(n)', stable: 'Yes' },
+  pseudocode: [
+    'scan for a natural run — a stretch already in order',
+    '  (a descending stretch is reversed, which keeps the sort stable)',
+    'if the run is shorter than minrun, extend it with insertion sort',
+    'push the run on a stack',
+    'merge stack neighbours whenever the size rules are broken',
+    'at the end, merge whatever is left',
+  ],
+  *run({ array }) {
+    const arr = array.slice();
+    const st = newState();
+    const n = arr.length;
+    if (n < 2) { yield allSorted(arr, st); return; }
+
+    const minrun = minRunLength(n);
+    let natural = 0, merges = 0;
+    const stats = () => ({ ...st.stats, 'natural runs': natural, merges });
+
+    yield snap(arr, st, { line: 0, note: `${n} items — minimum run length is ${minrun}`, stats: stats() });
+
+    /** Stack of runs, each { start, length }. */
+    const runs = [];
+
+    let i = 0;
+    while (i < n) {
+      /* ── find how far the data is already in order ── */
+      let end = i + 1;
+      let descending = false;
+
+      if (end < n) {
+        st.stats.comparisons++;
+        descending = arr[end] < arr[end - 1];
+        end++;
+        if (descending) {
+          while (end < n) {
+            st.stats.comparisons++;
+            if (arr[end] >= arr[end - 1]) break;
+            end++;
+          }
+        } else {
+          while (end < n) {
+            st.stats.comparisons++;
+            if (arr[end] < arr[end - 1]) break;
+            end++;
+          }
+        }
+      }
+
+      let len = end - i;
+      natural++;
+      yield snap(arr, st, {
+        range: [i, end - 1], line: 0,
+        note: `found a ${descending ? 'descending' : 'ascending'} run of ${len} already in order`,
+        stats: stats(),
+      });
+
+      /* ── a descending run is reversed, never sorted ── */
+      if (descending) {
+        let lo = i, hi = end - 1;
+        while (lo < hi) {
+          swapIn(arr, lo, hi, st);
+          yield snap(arr, st, { range: [i, end - 1], swap: [lo, hi], line: 1, note: 'reversing it — cheaper than sorting, and keeps equal items in order', stats: stats() });
+          lo++; hi--;
+        }
+      }
+
+      /* ── too short? insertion-sort more items onto the end ── */
+      if (len < minrun) {
+        const want = Math.min(minrun, n - i);
+        yield snap(arr, st, { range: [i, i + want - 1], line: 2, note: `only ${len} long — extending to ${want} with insertion sort`, stats: stats() });
+
+        for (let k = i + len; k < i + want; k++) {
+          const key = arr[k];
+          let j = k - 1;
+          while (j >= i) {
+            st.stats.comparisons++;
+            yield snap(arr, st, { range: [i, i + want - 1], compare: [j], cursor: k, line: 2, note: `is ${arr[j]} > ${key}?`, stats: stats() });
+            if (arr[j] <= key) break;
+            arr[j + 1] = arr[j];
+            st.stats.writes++;
+            j--;
+          }
+          arr[j + 1] = key;
+          st.stats.writes++;
+          yield snap(arr, st, { range: [i, i + want - 1], swap: [j + 1], line: 2, note: `placed ${key}`, stats: stats() });
+        }
+        len = want;
+      }
+
+      runs.push({ start: i, length: len });
+      yield snap(arr, st, {
+        range: [i, i + len - 1], line: 3,
+        note: `run of ${len} pushed — stack is now [${runs.map((r) => r.length).join(', ')}]`,
+        stats: stats(),
+      });
+      i += len;
+
+      /* ── keep the stack balanced ── */
+      yield* collapse(false);
+    }
+
+    /* ── merge whatever is left ── */
+    yield* collapse(true);
+
+    // Closing frame keeps the run/merge counters, which are the whole story
+    // here — allSorted() would carry only the generic ones.
+    for (let k = 0; k < n; k++) st.sorted.add(k);
+    yield snap(arr, st, {
+      line: -1,
+      note: `sorted — ${natural} natural run${natural === 1 ? '' : 's'} found, ${merges} merge${merges === 1 ? '' : 's'} performed`,
+      stats: stats(),
+    });
+
+    /**
+     * Timsort's stack rules: each run must be longer than the sum of the
+     * two above it, and longer than the one above it. Breaking either one
+     * triggers a merge, which is what keeps merge sizes similar.
+     */
+    function* collapse(force) {
+      while (runs.length > 1) {
+        let k = runs.length - 2;
+
+        if (!force) {
+          const a = runs[k - 1], b = runs[k], c = runs[k + 1];
+          if (k > 0 && a.length <= b.length + c.length) {
+            if (a.length < c.length) k--;
+          } else if (b.length <= c.length) {
+            // merge at k
+          } else break;
+        } else if (k > 0 && runs[k - 1].length < runs[k + 1].length) {
+          k--;
+        }
+
+        yield* mergeRuns(k);
+      }
+    }
+
+    function* mergeRuns(k) {
+      const left = runs[k], right = runs[k + 1];
+      const lo = left.start, mid = lo + left.length - 1, hi = right.start + right.length - 1;
+      merges++;
+
+      yield snap(arr, st, {
+        range: [lo, hi], line: 4,
+        note: `merging runs of ${left.length} and ${right.length}`,
+        stats: stats(),
+      });
+
+      const leftCopy = arr.slice(lo, mid + 1);
+      const rightCopy = arr.slice(mid + 1, hi + 1);
+      let a = 0, b = 0, w = lo;
+
+      while (a < leftCopy.length && b < rightCopy.length) {
+        st.stats.comparisons++;
+        // <= keeps equal elements in their original order: the stable choice
+        const takeLeft = leftCopy[a] <= rightCopy[b];
+        arr[w] = takeLeft ? leftCopy[a++] : rightCopy[b++];
+        st.stats.writes++;
+        yield snap(arr, st, { range: [lo, hi], swap: [w], cursor: w, line: 4, note: `${takeLeft ? 'left' : 'right'} run wins with ${arr[w]}`, stats: stats() });
+        w++;
+      }
+      while (a < leftCopy.length) {
+        arr[w] = leftCopy[a++]; st.stats.writes++;
+        yield snap(arr, st, { range: [lo, hi], swap: [w], line: 4, note: `rest of the left run: ${arr[w]}`, stats: stats() });
+        w++;
+      }
+      while (b < rightCopy.length) {
+        arr[w] = rightCopy[b++]; st.stats.writes++;
+        yield snap(arr, st, { range: [lo, hi], swap: [w], line: 4, note: `rest of the right run: ${arr[w]}`, stats: stats() });
+        w++;
+      }
+
+      runs.splice(k, 2, { start: lo, length: left.length + right.length });
+      yield snap(arr, st, {
+        range: [lo, hi], line: 4,
+        note: `merged — stack is now [${runs.map((r) => r.length).join(', ')}]`,
+        stats: stats(),
+      });
+    }
+  },
+};
+
 export const SORTING = [
   bubble, cocktail, selection, insertion, binaryInsertion,
   shell, comb, gnome, oddEven,
-  merge, quick, quick3, heap,
+  merge, timsort, quick, quick3, heap,
   counting, radix, bucket, cycleSort, pancake, bogo,
 ];

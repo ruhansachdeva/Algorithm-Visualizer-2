@@ -1,6 +1,6 @@
 # Algorithm Visualizer
 
-A browser-based visualizer for 67 classic algorithms — sorting, searching,
+A browser-based visualizer for 72 classic algorithms — sorting, searching,
 pathfinding, graphs, trees, dynamic programming, string matching, backtracking
 and maze generation.
 
@@ -42,11 +42,11 @@ move the start and goal.
 
 | Category | Count | |
 | --- | --- | --- |
-| Sorting | 19 | bubble, cocktail, selection, insertion, binary insertion, shell, comb, gnome, odd-even, merge, quick, quick 3-way, heap, counting, radix, bucket, cycle, pancake, bogo |
+| Sorting | 20 | bubble, cocktail, selection, insertion, binary insertion, shell, comb, gnome, odd-even, merge, **Timsort**, quick, quick 3-way, heap, counting, radix, bucket, cycle, pancake, bogo |
 | Searching | 7 | linear, binary, jump, exponential, interpolation, ternary, Fibonacci |
 | Pathfinding | 6 | BFS, DFS, Dijkstra, A*, greedy best-first, bidirectional BFS |
-| Graphs | 9 | BFS, DFS, Dijkstra, Bellman-Ford, topological sort, union-find, Kruskal, Prim, cycle detection |
-| Trees | 9 | BST insert/search/delete, in/pre/post/level-order traversal, AVL insert, binary heap |
+| Graphs | 11 | BFS, DFS, Dijkstra, Bellman-Ford, **Floyd-Warshall**, topological sort, union-find, Kruskal, Prim, cycle detection, **Tarjan's SCC** |
+| Trees | 11 | BST insert/search/delete, in/pre/post/level-order traversal, AVL insert, binary heap, **trie insert/search** |
 | Dynamic programming | 7 | Fibonacci, LIS, coin change, subset sum, knapsack, LCS, edit distance |
 | String matching | 4 | naive, KMP, Boyer-Moore, Rabin-Karp |
 | Backtracking | 3 | N-Queens, Sudoku, Towers of Hanoi |
@@ -67,6 +67,11 @@ move the start and goal.
   three coins; the table finds 3+3.
 - Run all four string matchers on the same text and compare the comparison
   counts in the live counters.
+- Set the array shape to **already sorted** and run **Timsort**: it finds one
+  natural run and stops in 99 comparisons where merge sort grinds through 356.
+  That is the whole reason Python and Java use it.
+- **Trie Search** for `CAR` when `CARD` and `CARE` are stored — it lands on a
+  node with no ✓, which is exactly what autocomplete is.
 
 ## How it works
 
