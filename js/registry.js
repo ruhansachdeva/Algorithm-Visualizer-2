@@ -10,6 +10,7 @@ import { GRAPHS } from './algorithms/graphs/graph.js';
 import { TREES } from './algorithms/trees/index.js';
 import { DP } from './algorithms/dp/index.js';
 import { STRINGS } from './algorithms/strings/index.js';
+import { BACKTRACKING } from './algorithms/backtracking/index.js';
 import { MAZES } from './algorithms/graphs/maze.js';
 
 import { drawArray } from './views/array-view.js';
@@ -18,6 +19,7 @@ import { drawGraph } from './views/graph-view.js';
 import { drawTree } from './views/tree-view.js';
 import { drawTable } from './views/table-view.js';
 import { drawString } from './views/string-view.js';
+import { drawQueens, drawSudoku, drawHanoi } from './views/puzzle-view.js';
 
 export const CATEGORIES = [
   { id: 'sorting',     name: 'Sorting',     algorithms: SORTING },
@@ -27,6 +29,7 @@ export const CATEGORIES = [
   { id: 'trees',       name: 'Trees',       algorithms: TREES },
   { id: 'dp',          name: 'Dynamic Programming', algorithms: DP },
   { id: 'strings',     name: 'String Matching', algorithms: STRINGS },
+  { id: 'backtracking', name: 'Backtracking', algorithms: BACKTRACKING },
   { id: 'mazes',       name: 'Maze Generation', algorithms: MAZES },
 ];
 
@@ -38,6 +41,9 @@ export const VIEWS = {
   tree: drawTree,
   table: drawTable,
   string: drawString,
+  queens: drawQueens,
+  sudoku: drawSudoku,
+  hanoi: drawHanoi,
 };
 
 /** view name -> how a mouse maps onto that view (optional) */
