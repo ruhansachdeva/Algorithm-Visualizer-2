@@ -1,2 +1,149 @@
-# Algorithm-Visualizer-2
-The new and improved (slightly Claude used) algorithm visualizer!
+# Algorithm Visualizer
+
+A browser-based visualizer for 67 classic algorithms — sorting, searching,
+pathfinding, graphs, trees, dynamic programming, string matching, backtracking
+and maze generation.
+
+The successor to my terminal version, which had four algorithms and printed
+arrows under numbers.
+
+## Running it
+
+There is no build step, no `npm install`, no toolchain. Two options:
+
+**Double-click `index.html`.** Works for everything.
+
+**Or serve it locally** (nicer, and how I test it):
+
+```sh
+python3 -m http.server 8000
+# then open http://localhost:8000
+```
+
+## Controls
+
+| Key | Does |
+| --- | --- |
+| `space` | play / pause |
+| `→` `←` | one step forward / back |
+| `shift` + `→` `←` | jump 25 steps |
+| `r` | back to the start |
+| `n` | regenerate the input and re-run |
+| `Home` / `End` | first / last step |
+
+You can also drag the scrubber to any point, and the URL carries your place —
+`#quick@120` opens Quick Sort paused at step 120, so a specific moment is
+linkable.
+
+On the pathfinding board you can **drag to draw walls** and **drag S or G** to
+move the start and goal.
+
+## What's in it
+
+| Category | Count | |
+| --- | --- | --- |
+| Sorting | 19 | bubble, cocktail, selection, insertion, binary insertion, shell, comb, gnome, odd-even, merge, quick, quick 3-way, heap, counting, radix, bucket, cycle, pancake, bogo |
+| Searching | 7 | linear, binary, jump, exponential, interpolation, ternary, Fibonacci |
+| Pathfinding | 6 | BFS, DFS, Dijkstra, A*, greedy best-first, bidirectional BFS |
+| Graphs | 9 | BFS, DFS, Dijkstra, Bellman-Ford, topological sort, union-find, Kruskal, Prim, cycle detection |
+| Trees | 9 | BST insert/search/delete, in/pre/post/level-order traversal, AVL insert, binary heap |
+| Dynamic programming | 7 | Fibonacci, LIS, coin change, subset sum, knapsack, LCS, edit distance |
+| String matching | 4 | naive, KMP, Boyer-Moore, Rabin-Karp |
+| Backtracking | 3 | N-Queens, Sudoku, Towers of Hanoi |
+| Maze generation | 3 | recursive backtracker, randomized Prim, recursive division |
+
+### Some things worth trying
+
+- Set the array shape to **already sorted**, then run **BST Insert** and
+  **AVL Insert** back to back. The plain BST collapses into a list of height 15;
+  the AVL rotates its way to height 4.
+- Run **A\*** and then **BFS** on an empty board. Same shortest path, but A\*
+  visits a fraction of the cells.
+- Switch on **terrain** and compare **Dijkstra** with **greedy best-first**.
+  Greedy is faster and takes a worse route.
+- Run a maze generator, then switch to **A\*** — it solves the maze you just
+  watched being carved.
+- Coin change with coins **1, 3, 4** making **6**. Greedy grabs the 4 and needs
+  three coins; the table finds 3+3.
+- Run all four string matchers on the same text and compare the comparison
+  counts in the live counters.
+
+## How it works
+
+Every algorithm is a **generator**. It runs the real algorithm, and each `yield`
+hands back a snapshot of what it is doing at that moment:
+
+```js
+*run({ array }) {
+  const arr = array.slice();
+  for (let j = 0; j < arr.length - 1; j++) {
+    yield snap(arr, st, { compare: [j, j + 1], note: `is ${arr[j]} > ${arr[j+1]}?` });
+    if (arr[j] > arr[j + 1]) swapIn(arr, j, j + 1, st);
+  }
+}
+```
+
+Those snapshots ("frames") are recorded into an array up front, and the player
+replays them like a video. That is why stepping *backwards* and scrubbing are
+instant — frame `n-1` is just sitting there, no re-running required.
+
+The payoff is that the algorithm code stays close to how you would normally
+write it. Read any `run` function and ignore the `yield` lines, and you are
+reading an ordinary implementation.
+
+### Layout
+
+```
+index.html              page shell
+css/style.css           all styling; colors are CSS variables at the top
+js/
+  main.js               wires everything together
+  registry.js           the catalogue — which algorithms exist, in which category
+  inputs.js             the controls under the stage, per input type
+  engine/player.js      records frames, then plays / pauses / steps / scrubs
+  views/                one renderer per kind of picture
+    draw.js               shared canvas helpers
+    array-view.js         bar chart        (sorting, searching)
+    grid-view.js          2D board         (pathfinding, mazes)
+    graph-view.js         nodes and edges  (graph algorithms)
+    tree-view.js          rooted trees     (BST, AVL, heap)
+    table-view.js         DP tables
+    string-view.js        text and pattern
+    puzzle-view.js        N-Queens, Sudoku, Hanoi
+  algorithms/           the algorithms themselves, grouped by category
+```
+
+## Adding an algorithm
+
+1. Write a generator in the right file under `js/algorithms/`:
+
+```js
+const myThing = {
+  id: 'my-thing',                 // unique; also the URL hash
+  name: 'My Thing',
+  view: 'array',                  // which renderer to use
+  input: 'array',                 // which controls to show
+  about: 'One paragraph on what it does and why it is interesting.',
+  cost: { best: 'O(n)', avg: 'O(n²)', worst: 'O(n²)', space: 'O(1)', stable: 'Yes' },
+  pseudocode: ['step one', 'step two'],
+  *run({ array }) {
+    // yield a frame whenever something worth seeing happens.
+    // `line: 1` highlights pseudocode line 1 while this frame shows.
+  },
+};
+```
+
+2. Add it to that file's exported list (e.g. `export const SORTING = [...]`).
+
+That's it — the sidebar, legend and info panel all build themselves from the
+definition. The legend is derived from which highlight keys your frames actually
+use, so it can never advertise a color you don't use.
+
+A new **category** also needs one line in `js/registry.js`. A new **view** needs
+a `draw(canvas, frame)` function registered in the `VIEWS` map there.
+
+### Frame budgets
+
+Frames are held in memory, so each run is capped (60,000 steps by default). An
+algorithm that legitimately needs more says so with `maxFrames` — the hard
+Sudoku takes about 213,000 steps, but its frames are 81 bytes each.
