@@ -7,17 +7,20 @@ import { SORTING } from './algorithms/sorting/index.js';
 import { SEARCHING } from './algorithms/searching/index.js';
 import { PATHFINDING } from './algorithms/graphs/grid.js';
 import { GRAPHS } from './algorithms/graphs/graph.js';
+import { TREES } from './algorithms/trees/index.js';
 import { MAZES } from './algorithms/graphs/maze.js';
 
 import { drawArray } from './views/array-view.js';
 import { drawGrid, cellAt } from './views/grid-view.js';
 import { drawGraph } from './views/graph-view.js';
+import { drawTree } from './views/tree-view.js';
 
 export const CATEGORIES = [
   { id: 'sorting',     name: 'Sorting',     algorithms: SORTING },
   { id: 'searching',   name: 'Searching',   algorithms: SEARCHING },
   { id: 'pathfinding', name: 'Pathfinding', algorithms: PATHFINDING },
   { id: 'graphs',      name: 'Graphs',      algorithms: GRAPHS },
+  { id: 'trees',       name: 'Trees',       algorithms: TREES },
   { id: 'mazes',       name: 'Maze Generation', algorithms: MAZES },
 ];
 
@@ -26,6 +29,7 @@ export const VIEWS = {
   array: drawArray,
   grid: drawGrid,
   graph: drawGraph,
+  tree: drawTree,
 };
 
 /** view name -> how a mouse maps onto that view (optional) */
