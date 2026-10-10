@@ -4,11 +4,13 @@
    ============================================================ */
 
 import { SORTING } from './algorithms/sorting/index.js';
+import { SEARCHING } from './algorithms/searching/index.js';
 
 import { drawArray } from './views/array-view.js';
 
 export const CATEGORIES = [
   { id: 'sorting',     name: 'Sorting',     algorithms: SORTING },
+  { id: 'searching',   name: 'Searching',   algorithms: SEARCHING },
 ];
 
 /** view name -> the function that paints a frame of that kind */
