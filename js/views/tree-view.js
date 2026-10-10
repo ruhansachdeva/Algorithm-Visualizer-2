@@ -74,7 +74,7 @@ function layoutTree(nodes, root, binary) {
 export function drawTree(canvas, frame) {
   const { ctx, w, h } = fitCanvas(canvas);
   const C = colors();
-  const { nodes, root, states, binary = true } = frame;
+  const { nodes, root, states, paint, binary = true } = frame;
 
   if (root === null || root === undefined || !nodes?.length) {
     label(ctx, frame.emptyText || 'the tree is empty', w / 2, h / 2, { size: 13, color: C.faint, mono: false });
@@ -119,13 +119,23 @@ export function drawTree(canvas, frame) {
     const st = states ? states[i] : T.IDLE;
     const x = X(i), y = Y(i);
 
-    circle(ctx, x, y, R, fillFor[st] ?? C.sunken);
-    strokeCircle(ctx, x, y, R, st === T.IDLE ? C.border : 'transparent', 1.5);
+    // `paint` gives a node a colour that belongs to the NODE (a red-black
+    // tree's red or black), so the usual state colour becomes a ring around
+    // it instead of replacing it.
+    const own = paint ? paint[i] : null;
+
+    if (own) {
+      circle(ctx, x, y, R, own);
+      strokeCircle(ctx, x, y, R, st === T.IDLE ? C.border : (fillFor[st] ?? C.border), st === T.IDLE ? 1 : 3);
+    } else {
+      circle(ctx, x, y, R, fillFor[st] ?? C.sunken);
+      strokeCircle(ctx, x, y, R, st === T.IDLE ? C.border : 'transparent', 1.5);
+    }
 
     label(ctx, String(nodes[i].label), x, y, {
       size: Math.min(13, R * 0.85),
       weight: 700,
-      color: st === T.IDLE ? C.dim : '#0d1117',
+      color: own ? '#ffffff' : (st === T.IDLE ? C.dim : '#0d1117'),
     });
 
     // a small badge: AVL balance factor, trie end-of-word, heap index…

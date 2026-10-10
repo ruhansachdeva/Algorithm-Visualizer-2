@@ -1,6 +1,6 @@
 # Algorithm Visualizer
 
-A browser-based visualizer for 72 classic algorithms — sorting, searching,
+A browser-based visualizer for 73 classic algorithms — sorting, searching,
 pathfinding, graphs, trees, dynamic programming, string matching, backtracking
 and maze generation.
 
@@ -46,7 +46,7 @@ move the start and goal.
 | Searching | 7 | linear, binary, jump, exponential, interpolation, ternary, Fibonacci |
 | Pathfinding | 6 | BFS, DFS, Dijkstra, A*, greedy best-first, bidirectional BFS |
 | Graphs | 11 | BFS, DFS, Dijkstra, Bellman-Ford, **Floyd-Warshall**, topological sort, union-find, Kruskal, Prim, cycle detection, **Tarjan's SCC** |
-| Trees | 11 | BST insert/search/delete, in/pre/post/level-order traversal, AVL insert, binary heap, **trie insert/search** |
+| Trees | 12 | BST insert/search/delete, in/pre/post/level-order traversal, AVL insert, **red-black insert**, binary heap, trie insert/search |
 | Dynamic programming | 7 | Fibonacci, LIS, coin change, subset sum, knapsack, LCS, edit distance |
 | String matching | 4 | naive, KMP, Boyer-Moore, Rabin-Karp |
 | Backtracking | 3 | N-Queens, Sudoku, Towers of Hanoi |
@@ -72,6 +72,10 @@ move the start and goal.
   That is the whole reason Python and Java use it.
 - **Trie Search** for `CAR` when `CARD` and `CARE` are stored — it lands on a
   node with no ✓, which is exactly what autocomplete is.
+- Run **AVL Insert** and **Red-Black Insert** on the same sorted input and read
+  the counters. On 31 sorted values AVL ends up height 5 and red-black height 8,
+  but over 40 inserts red-black does fewer rotations. AVL searches faster,
+  red-black writes faster — that trade is why both exist.
 
 ## How it works
 
