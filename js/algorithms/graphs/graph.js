@@ -694,4 +694,99 @@ const tarjan = {
   },
 };
 
-export const GRAPHS = [bfs, dfs, dijkstra, bellmanFord, topo, unionFind, kruskal, prim, cycleDetect, tarjan];
+
+/* ────────────────────── Floyd-Warshall ─────────────────── */
+
+const floydWarshall = {
+  id: 'graph-floyd-warshall',
+  name: 'Floyd-Warshall',
+  view: 'table',          // the table IS the algorithm here, not the graph
+  input: 'graph',
+  legend: [
+    ['--c-swap',    'pair being reconsidered'],
+    ['--c-compare', 'the two legs of the detour'],
+    ['--c-range',   'best known so far'],
+    ['--c-path',    'diagonal — zero means no negative cycle'],
+  ],
+  about: 'Shortest paths between EVERY pair of nodes, not just from one start. The idea is disarmingly simple: for each node k in turn, ask of every pair (i, j) whether detouring through k is shorter than what you already have. After every k has had its turn, every entry is optimal. Three nested loops, five lines, and it copes with negative edges.',
+  cost: { best: 'O(V³)', avg: 'O(V³)', worst: 'O(V³)', space: 'O(V²)', stable: '—' },
+  graph: { directed: true, weighted: true },
+  pseudocode: [
+    'start the table at the direct edge costs (∞ where there is no edge)',
+    'for each node k, as a possible stop-over:',
+    '  for every pair (i, j):',
+    '    if cost(i→k) + cost(k→j) < cost(i→j), take the detour',
+    'after the last k, every entry is the true shortest path',
+  ],
+  *run(inp) {
+    const n = inp.nodes.length;
+    const names = inp.nodes.map((x) => x.name);
+    const d = Array.from({ length: n }, (_, i) =>
+      Array.from({ length: n }, (_, j) => (i === j ? 0 : Infinity)));
+
+    for (const e of inp.edges) {
+      d[e.a][e.b] = Math.min(d[e.a][e.b], e.w);
+      if (!inp.directed) d[e.b][e.a] = Math.min(d[e.b][e.a], e.w);
+    }
+
+    let improvements = 0, tests = 0;
+    const f = (extra) => ({
+      table: d.map((row) => [...row]),
+      rowLabels: names, colLabels: names,
+      rowTitle: 'from', colTitle: 'to',
+      stats: { 'stop-overs done': extra._k ?? 0, tested: tests, improvements },
+      ...extra,
+    });
+
+    yield f({ line: 0, note: 'the table starts as the direct edges — ∞ means no direct link' });
+
+    for (let k = 0; k < n; k++) {
+      yield f({ _k: k, line: 1, note: `now allowing ${names[k]} as a stop-over` });
+
+      for (let i = 0; i < n; i++) {
+        for (let j = 0; j < n; j++) {
+          if (i === j) continue;
+          tests++;
+          const viaK = d[i][k] + d[k][j];
+
+          // Only pause on pairs where the detour is actually possible —
+          // otherwise V³ frames of "∞ is not better" drowns out the idea.
+          if (Number.isFinite(viaK)) {
+            yield f({
+              _k: k, current: [i, j], deps: [[i, k], [k, j]], line: 3,
+              note: `${names[i]}→${names[j]} costs ${fmt(d[i][j])}; via ${names[k]} it is ${fmt(d[i][k])} + ${fmt(d[k][j])} = ${viaK}`,
+            });
+          }
+
+          if (viaK < d[i][j]) {
+            d[i][j] = viaK;
+            improvements++;
+            yield f({
+              _k: k, current: [i, j], deps: [[i, k], [k, j]], line: 3,
+              note: `better — ${names[i]}→${names[j]} is now ${viaK} by going through ${names[k]}`,
+            });
+          }
+        }
+      }
+      yield f({ _k: k + 1, line: 1, note: `${names[k]} done — every route that benefits from it is recorded` });
+    }
+
+    // A negative number on the diagonal means a loop that pays you to walk it.
+    const negative = [];
+    for (let i = 0; i < n; i++) if (d[i][i] < 0) negative.push(names[i]);
+
+    const unreachable = d.flat().filter((v) => !Number.isFinite(v)).length;
+    yield f({
+      _k: n,
+      path: Array.from({ length: n }, (_, i) => [i, i]),
+      note: negative.length
+        ? `negative cycle through ${negative.join(', ')} — shortest paths are undefined`
+        : `done — every pair's shortest path is in the table` +
+          (unreachable ? `, and ${unreachable} pair(s) have no route at all` : ''),
+    });
+  },
+};
+
+const fmt = (v) => (Number.isFinite(v) ? v : '∞');
+
+export const GRAPHS = [bfs, dfs, dijkstra, bellmanFord, floydWarshall, topo, unionFind, kruskal, prim, cycleDetect, tarjan];
