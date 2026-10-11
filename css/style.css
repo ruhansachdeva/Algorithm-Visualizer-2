@@ -571,6 +571,20 @@ input[type="range"]::-moz-range-thumb {
 
 .info-block { margin-bottom: 20px; }
 
+/* The recommendation sits in a tinted card so it reads as an opinion,
+   not as more neutral reference text. */
+.pick-block {
+  background: color-mix(in srgb, var(--cat-current, var(--accent)) 11%, transparent);
+  border: 1px solid color-mix(in srgb, var(--cat-current, var(--accent)) 30%, transparent);
+  border-radius: 10px;
+  padding: 11px 13px;
+}
+.pick-block h3 { color: var(--cat-current, var(--accent)); }
+.pick-block p { color: var(--text); }
+.pick-block[hidden] { display: none; }
+
+.pick-star { font-size: 11px; }
+
 .info-block h3 {
   margin: 0 0 7px;
   font-size: 10.5px;

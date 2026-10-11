@@ -226,6 +226,11 @@ function buildSidebar(filterText = '') {
   }
 }
 
+/** The colour belonging to an algorithm's category. */
+function categoryColor(algo) {
+  return CATEGORIES.find((c) => c.id === algo.category)?.color || 'var(--accent)';
+}
+
 /** Categories the user has folded away, remembered between visits. */
 const collapsed = new Set(readCollapsed());
 
@@ -273,6 +278,10 @@ function select(id) {
 
   dom.title.textContent = algo.name;
   dom.about.textContent = algo.about || '';
+
+  $('pick-block').hidden = !algo.pick;
+  $('info-pick').textContent = algo.pick || '';
+  document.documentElement.style.setProperty('--cat-current', categoryColor(algo));
   renderCost(algo.cost);
   renderPseudocode(algo.pseudocode);
 
