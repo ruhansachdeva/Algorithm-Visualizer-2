@@ -40,7 +40,7 @@ const palindrome = {
 
     const f = (extra) => ({
       text, pattern: '',
-      span: [bestLo, bestHi],
+      spans: [[bestLo, bestHi]],
       stats: { centres, comparisons, longest: bestHi - bestLo + 1 },
       ...extra,
     });

@@ -54,10 +54,16 @@ const naive = {
         yield { text, pattern, offset, ok: m, found: [...found], line: 1, note: `full match at index ${offset}`, stats: { comparisons, offset, matches: found.length } };
       }
     }
-    yield { text, pattern, offset: n, found: [...found], note: summarise(found, comparisons), stats: { comparisons, matches: found.length } };
+    yield { text, pattern, offset: n, found: [...found], matchesAt: [...found], note: summarise(found, comparisons), stats: { comparisons, matches: found.length } };
   },
 };
 
+/**
+ * The match offsets, in coordinates of the ORIGINAL text, on the closing
+ * frame of every matcher. `found` drives highlighting and is not always in
+ * the same coordinates — the Z-algorithm displays a concatenated string —
+ * so anything reading the ANSWER should read this.
+ */
 function summarise(found, comparisons) {
   return found.length
     ? `found ${found.length} match${found.length === 1 ? '' : 'es'} at ${found.join(', ')} using ${comparisons} character comparisons`
@@ -140,7 +146,7 @@ const kmp = {
       }
     }
 
-    yield { text, pattern, offset: n, found: [...found], table: tbl(null), note: summarise(found, comparisons), stats: { comparisons, 'positions skipped': skipped, matches: found.length } };
+    yield { text, pattern, offset: n, found: [...found], matchesAt: [...found], table: tbl(null), note: summarise(found, comparisons), stats: { comparisons, 'positions skipped': skipped, matches: found.length } };
   },
 };
 
@@ -216,7 +222,7 @@ const rabinKarp = {
       }
     }
 
-    yield { text, pattern, offset: n, found: [...found], note: `${summarise(found, comparisons)} — plus ${hashChecks} hash checks and ${collisions} collision${collisions === 1 ? '' : 's'}`, stats: { 'hash checks': hashChecks, comparisons, collisions } };
+    yield { text, pattern, offset: n, found: [...found], matchesAt: [...found], note: `${summarise(found, comparisons)} — plus ${hashChecks} hash checks and ${collisions} collision${collisions === 1 ? '' : 's'}`, stats: { 'hash checks': hashChecks, comparisons, collisions } };
   },
 };
 
@@ -292,7 +298,7 @@ const boyerMoore = {
       }
     }
 
-    yield { text, pattern, offset: n, found: [...found], table: tbl(), note: `${summarise(found, comparisons)} — skipped ${skipped} characters without ever looking at them`, stats: { comparisons, 'characters skipped': skipped, matches: found.length } };
+    yield { text, pattern, offset: n, found: [...found], matchesAt: [...found], table: tbl(), note: `${summarise(found, comparisons)} — skipped ${skipped} characters without ever looking at them`, stats: { comparisons, 'characters skipped': skipped, matches: found.length } };
   },
 };
 

@@ -26,7 +26,7 @@ const PAD = 18;
 export function drawString(canvas, frame) {
   const { ctx, w, h } = fitCanvas(canvas);
   const C = colors();
-  const { text = '', pattern = '', offset = 0, at = -1, ok = 0, mismatch = false, found = [], table, span = null, probe = null } = frame;
+  const { text = '', pattern = '', offset = 0, at = -1, ok = 0, mismatch = false, found = [], table, span = null, spans = null, probe = null } = frame;
   if (!text) return;
 
   const n = text.length;
@@ -47,6 +47,7 @@ export function drawString(canvas, frame) {
   // algorithms that find something inside one string rather than matching
   // a second one against it.
   if (span) for (let i = span[0]; i <= span[1]; i++) foundSet.add(i);
+  if (spans) for (const [lo, hi] of spans) for (let i = lo; i <= hi; i++) foundSet.add(i);
   const probeSet = new Set(probe || []);
 
   /* ── the text ── */

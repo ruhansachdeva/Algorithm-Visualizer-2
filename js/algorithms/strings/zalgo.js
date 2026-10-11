@@ -47,12 +47,14 @@ const zAlgorithm = {
     const n = s.length;
     const m = pattern.length;
     const z = new Array(n).fill(0);
-    const found = [];
+    const found = [];        // offsets in the ORIGINAL text
+    const marks = [];        // the same matches, in concatenated coordinates
     let comparisons = 0, copied = 0;
 
     const f = (extra) => ({
       text: s, pattern: '',
       table: { label: `Z — how much of the start repeats here (a ${m} means the pattern)`, values: [...z], keys: s.split('') },
+      spans: marks.map((k) => [k, k + m - 1]),
       stats: { comparisons, 'answers copied, not recomputed': copied, matches: found.length },
       ...extra,
     });
@@ -87,8 +89,9 @@ const zAlgorithm = {
       if (z[i] === m) {
         const at = i - m - 1;
         found.push(at);
+        marks.push(i);
         yield f({
-          probe: [i], span: [i, i + m - 1], line: 5,
+          probe: [i], line: 5,
           note: `Z is ${m}, the whole pattern — it occurs at index ${at} of the text`,
         });
       }
@@ -99,7 +102,7 @@ const zAlgorithm = {
       note: found.length
         ? `${found.length} match${found.length === 1 ? '' : 'es'} at ${found.join(', ')} — ${comparisons} comparisons, with ${copied} answers copied rather than recomputed`
         : `no match — ${comparisons} comparisons`,
-      found: [],
+      matchesAt: [...found],
     });
   },
 };
