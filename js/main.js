@@ -414,6 +414,17 @@ player.setSpeed(Number(dom.speed.value));
 
 dom.filter.addEventListener('input', () => buildSidebar(dom.filter.value));
 
+/* Someone who has asked their system to reduce motion probably does not
+   want 400 steps a second. Start them slow; they can still speed up. */
+if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+  let hasSavedSpeed = false;
+  try { hasSavedSpeed = !!localStorage.getItem('av2:speed'); } catch {}
+  if (!hasSavedSpeed) {
+    dom.speed.value = '18';
+    player.setSpeed(18);
+  }
+}
+
 /* ───────────────────── race mode ───────────────────────── */
 
 /**

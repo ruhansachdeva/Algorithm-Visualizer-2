@@ -682,3 +682,7 @@ input[type="range"]::-moz-range-thumb {
   z-index: 100;
 }
 .skip-link:focus { left: 10px; top: 10px; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition-duration: 0.01ms !important; }
+}
