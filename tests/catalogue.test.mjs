@@ -9,6 +9,7 @@ export const name = 'catalogue';
 export async function run() {
   reset();
   const { CATEGORIES, ALL, VIEWS, HIT_TEST } = await load('registry.js');
+  const { TRADEOFFS } = await load('tradeoffs.js');
 
   check(ALL.length > 0, 'the catalogue is empty');
 
@@ -28,6 +29,33 @@ export async function run() {
       `${algo.id} declares the view "${algo.view}", which nothing knows how to draw`);
     check(typeof algo.input === 'string' && algo.input.length > 0,
       `${algo.id} declares no input type, so no controls would appear`);
+  }
+
+  /* Every algorithm needs a trade-offs entry. A new one added without
+     prose leaves the panel empty, which looks like a bug and is the kind
+     of omission nobody notices until a user does. */
+  for (const algo of ALL) {
+    const t = TRADEOFFS[algo.id];
+    if (!check(t !== undefined, `${algo.id} has no trade-offs entry`)) continue;
+    check(Array.isArray(t.pros) && t.pros.length > 0, `${algo.id} lists no pros`);
+    check(Array.isArray(t.cons) && t.cons.length > 0,
+      `${algo.id} lists no cons — every algorithm has a downside, even if it is only narrow applicability`);
+    check(typeof t.useWhen === 'string' && t.useWhen.length > 10, `${algo.id} does not say when to reach for it`);
+    check(typeof t.avoid === 'string' && t.avoid.length > 5, `${algo.id} does not say when to avoid it`);
+    // Length is a poor proxy for usefulness — "Not stable." is short and
+    // says something real. Reject content-free filler by name instead.
+    const FILLER = ['slow', 'fast', 'inefficient', 'efficient', 'simple', 'complex', 'good', 'bad'];
+    for (const line of [...t.pros, ...t.cons]) {
+      const bare = line.toLowerCase().replace(/[^a-z ]/g, '').trim();
+      check(!FILLER.includes(bare), `${algo.id} has a content-free trade-off: "${line}"`);
+      check(line.trim().length > 0, `${algo.id} has an empty trade-off`);
+    }
+  }
+
+  /* And nothing stale pointing at an algorithm that no longer exists. */
+  for (const id of Object.keys(TRADEOFFS)) {
+    check(ALL.some((a) => a.id === id) || id.startsWith('segtree'),
+      `trade-offs mention "${id}", which is not in the catalogue`);
   }
 
   /* Every category needs an identity, since the sidebar is built from it. */

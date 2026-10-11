@@ -958,6 +958,85 @@ input[type="range"]::-moz-range-thumb {
   border-radius: 3px;
 }
 
+/* ───────────────────── pros & cons ─────────────────────── */
+
+.deep-dive h3 { margin: 0; }
+
+.dive-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  transition: color .12s;
+}
+.dive-toggle:hover { color: var(--text-dim); }
+
+.dive-chevron {
+  font-size: 13px;
+  line-height: 1;
+  transition: transform .16s ease;
+}
+.dive-toggle[aria-expanded="true"] .dive-chevron { transform: rotate(90deg); }
+
+.dive-body { padding-top: 10px; }
+.dive-body[hidden] { display: none; }
+
+.dive-list {
+  margin: 0 0 11px;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dive-list li {
+  display: flex;
+  gap: 7px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-dim);
+}
+
+.dive-list li::before {
+  flex: none;
+  font-weight: 700;
+  line-height: 1.45;
+}
+.dive-list.pros li::before { content: '+'; color: var(--c-sorted); }
+.dive-list.cons li::before { content: '\2212'; color: var(--c-swap); }
+
+.dive-when {
+  margin: 0 0 7px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-dim);
+  padding-top: 9px;
+  border-top: 1px solid var(--border);
+}
+.dive-when:last-child { margin-bottom: 0; }
+.dive-when b {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 3px;
+}
+.dive-when.use b { color: var(--c-sorted); }
+.dive-when.avoid b { color: var(--c-swap); }
+.dive-when.avoid { border-top: none; padding-top: 0; }
+
 /* ───────────────────── keyboard focus ──────────────────── */
 /* Buttons had no visible focus state, so tabbing through the UI
    was invisible. :focus-visible shows the ring for keyboard users
