@@ -57,9 +57,11 @@ In VS Code, the **Live Server** extension works too: right-click `index.html`
 | `n` | regenerate the input and re-run |
 | `Home` / `End` | first / last step |
 
-You can also drag the scrubber to any point, and the URL carries your place —
-`#quick@120` opens Quick Sort paused at step 120, so a specific moment is
-linkable.
+You can also drag the scrubber to any point, and the URL carries your place.
+`#quick@120~k3f` opens Quick Sort, paused at step 120, **on the same array
+the link's author was looking at** — the trailing seed reproduces the input
+exactly, so a link to a specific moment really does show that moment. The ⧉
+button in the header copies one.
 
 ## Race mode
 

@@ -17,6 +17,8 @@
    }
    ============================================================ */
 
+import { random } from '../rng.js';
+
 import { fitCanvas, colors, circle, strokeCircle, label, line, fillRound } from './draw.js';
 
 export const N = { IDLE: 0, FRONTIER: 1, VISITED: 2, CURRENT: 3, DONE: 4, START: 5 };
@@ -144,7 +146,7 @@ export function drawGraph(canvas, frame) {
  */
 export function layout(nodes, edges, rounds = 260) {
   for (const n of nodes) {
-    if (n.x === undefined) { n.x = Math.random(); n.y = Math.random(); }
+    if (n.x === undefined) { n.x = random(); n.y = random(); }
   }
   const k = 1.1 / Math.sqrt(nodes.length);
 
@@ -159,7 +161,7 @@ export function layout(nodes, edges, rounds = 260) {
         let dx = nodes[i].x - nodes[j].x;
         let dy = nodes[i].y - nodes[j].y;
         let d2 = dx * dx + dy * dy;
-        if (d2 < 1e-6) { dx = Math.random() * 0.01; dy = Math.random() * 0.01; d2 = 1e-4; }
+        if (d2 < 1e-6) { dx = random() * 0.01; dy = random() * 0.01; d2 = 1e-4; }
         const force = (k * k) / d2;
         fx[i] += dx * force; fy[i] += dy * force;
         fx[j] -= dx * force; fy[j] -= dy * force;

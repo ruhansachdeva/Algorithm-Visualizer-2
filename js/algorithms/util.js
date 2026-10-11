@@ -2,6 +2,8 @@
    Shared helpers for writing algorithms as generators.
    ============================================================ */
 
+import { random } from '../rng.js';
+
 /** Fresh bookkeeping for one run. */
 export function newState() {
   return {
@@ -42,7 +44,7 @@ export function allSorted(arr, state, note = 'sorted') {
 /** Shuffle in place (Fisher–Yates). */
 export function shuffle(a) {
   for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = Math.floor(random() * (i + 1));
     [a[i], a[j]] = [a[j], a[i]];
   }
   return a;
