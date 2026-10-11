@@ -21,16 +21,21 @@ import { drawTable } from './views/table-view.js';
 import { drawString } from './views/string-view.js';
 import { drawQueens, drawSudoku, drawHanoi } from './views/puzzle-view.js';
 
+/**
+ * Each category gets a colour and a one-line description. The colour is
+ * what makes the sidebar scannable — you learn where "the green ones" are
+ * without reading the headings.
+ */
 export const CATEGORIES = [
-  { id: 'sorting',     name: 'Sorting',     algorithms: SORTING },
-  { id: 'searching',   name: 'Searching',   algorithms: SEARCHING },
-  { id: 'pathfinding', name: 'Pathfinding', algorithms: PATHFINDING },
-  { id: 'graphs',      name: 'Graphs',      algorithms: GRAPHS },
-  { id: 'trees',       name: 'Trees',       algorithms: TREES },
-  { id: 'dp',          name: 'Dynamic Programming', algorithms: DP },
-  { id: 'strings',     name: 'String Matching', algorithms: STRINGS },
-  { id: 'backtracking', name: 'Backtracking', algorithms: BACKTRACKING },
-  { id: 'mazes',       name: 'Maze Generation', algorithms: MAZES },
+  { id: 'sorting',     name: 'Sorting',     color: '#4da3ff', blurb: 'Putting a list in order', algorithms: SORTING },
+  { id: 'searching',   name: 'Searching',   color: '#3ddc84', blurb: 'Finding one value in a list', algorithms: SEARCHING },
+  { id: 'pathfinding', name: 'Pathfinding', color: '#ffc53d', blurb: 'Shortest route across a board', algorithms: PATHFINDING },
+  { id: 'graphs',      name: 'Graphs',      color: '#c678dd', blurb: 'Networks of nodes and edges', algorithms: GRAPHS },
+  { id: 'trees',       name: 'Trees',       color: '#2dd4bf', blurb: 'Hierarchies, and how they stay balanced', algorithms: TREES },
+  { id: 'dp',          name: 'Dynamic Programming', color: '#ff8c42', blurb: 'Solving each subproblem once', algorithms: DP },
+  { id: 'strings',     name: 'String Matching', color: '#f472b6', blurb: 'Finding a pattern inside text', algorithms: STRINGS },
+  { id: 'backtracking', name: 'Backtracking', color: '#a3e635', blurb: 'Try, fail, undo, try again', algorithms: BACKTRACKING },
+  { id: 'mazes',       name: 'Maze Generation', color: '#8b96a5', blurb: 'Building a board to solve', algorithms: MAZES },
 ];
 
 /** view name -> the function that paints a frame of that kind */
