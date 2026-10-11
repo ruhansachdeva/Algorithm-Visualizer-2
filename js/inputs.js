@@ -19,6 +19,8 @@ export const state = {
   words:  { list: 'CAT, CAR, CARD, CARE, DOG, DO, DONE', target: 'CARD' },
   huffman:{ text: 'ABRACADABRA' },
   sieve:  { limit: 120 },
+  pair:   { a: 1071, b: 462 },
+  power:  { base: 7, exp: 19, mod: 1000000007 },
   palindrome: { text: 'BANANARAMA' },
   queens: { n: 8, findAll: false },
   sudoku: { which: 'easy' },
@@ -415,6 +417,38 @@ const builders = {
       box.append(hint);
     }
     return () => ({ array: s.data, target: s.target });
+  },
+
+  /* ── two whole numbers ── */
+  'two-numbers'(box, algo, rerun) {
+    const s = state.pair;
+    box.append(
+      numberBox('a', s.a, (v) => { s.a = Math.max(1, Math.min(99999, v | 0)); rerun(); }),
+      numberBox('b', s.b, (v) => { s.b = Math.max(0, Math.min(99999, v | 0)); rerun(); }),
+      button("Euclid's own example", () => { s.a = 1071; s.b = 462; rebuild(box, algo, rerun); }),
+      button('coprime pair', () => { s.a = 1234; s.b = 4567; rebuild(box, algo, rerun); }),
+      button('random', () => {
+        s.a = 2 + Math.floor(Math.random() * 9000);
+        s.b = 2 + Math.floor(Math.random() * 9000);
+        rebuild(box, algo, rerun);
+      }),
+    );
+    return () => ({ a: s.a, b: s.b });
+  },
+
+  /* ── base, exponent, modulus ── */
+  power(box, algo, rerun) {
+    const s = state.power;
+    box.append(
+      numberBox('base', s.base, (v) => { s.base = Math.max(1, Math.min(999, v | 0)); rerun(); }),
+      slider('exponent', { min: 1, max: 255, value: s.exp }, (v) => { s.exp = v; rerun(); }),
+      button('prime modulus', () => { s.mod = 1000000007; rebuild(box, algo, rerun); }),
+      button('small modulus', () => { s.mod = 1000; rebuild(box, algo, rerun); }),
+    );
+    const hint = el('span', 'field', `working mod ${s.mod} — a bigger exponent costs one more step each time it doubles`);
+    hint.style.opacity = '.7';
+    box.append(hint);
+    return () => ({ base: s.base, exp: s.exp, mod: s.mod });
   },
 
   /* ── an upper limit, for sieves ── */
