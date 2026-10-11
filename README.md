@@ -104,6 +104,12 @@ move the start and goal.
 | Geometry | 3 | convex hull (Graham scan), convex hull (gift wrapping), closest pair of points |
 | Maze generation | 3 | **recursive backtracker**★, randomized Prim, recursive division |
 
+Every algorithm also has a **Pros & cons** panel — what it is good at, what it
+is bad at, when to reach for it and when not to. A star says "start here"; the
+panel says why that is not the whole story. Quick Sort is starred and its panel
+still records that it is O(n²) on bad pivots, not stable, and has been a real
+denial-of-service vector.
+
 ★ marks the one worth reaching for in that category. Select it and the panel
 explains the trade-off that earns it the spot — which is not always the best
 on paper. Quicksort keeps its star despite an O(n²) worst case because it wins
