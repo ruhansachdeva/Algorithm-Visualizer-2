@@ -144,6 +144,8 @@ body {
   transform: translateY(-1px);
 }
 .icon-btn:active { transform: translateY(0); }
+.icon-btn.flash { color: var(--c-sorted); border-color: var(--c-sorted); }
+.icon-btn svg { display: block; }
 
 /* ───────────────────────── layout ───────────────────────── */
 
@@ -221,6 +223,7 @@ body {
 .cat-group {
   display: grid;
   grid-template-rows: 1fr;
+  overflow: hidden;
   transition: grid-template-rows .18s ease, opacity .14s ease;
 }
 .cat-group > * { min-height: 0; }
@@ -228,8 +231,10 @@ body {
   grid-template-rows: 0fr;
   opacity: 0;
   pointer-events: none;
-  overflow: hidden;
 }
+
+/* A collapsed heading sits tight against the next one. */
+.cat-head.shut { padding-bottom: 6px; }
 
 .cat-icon {
   display: inline-flex;

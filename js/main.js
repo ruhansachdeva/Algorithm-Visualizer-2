@@ -187,6 +187,13 @@ function buildSidebar(filterText = '') {
     group.className = 'cat-group';
     group.dataset.cat = cat.id;
 
+    // The rows go inside ONE wrapper. Collapsing works by animating the
+    // grid row to 0fr, and that only governs the FIRST child — with the
+    // buttons as direct children the rest land in implicit auto-sized rows
+    // and keep their height, leaving a gap where the list used to be.
+    const groupInner = document.createElement('div');
+    group.append(groupInner);
+
     head.addEventListener('click', () => toggleCategory(cat.id));
     dom.list.append(head, group);
 
@@ -216,7 +223,7 @@ function buildSidebar(filterText = '') {
       }
 
       b.addEventListener('click', () => select(algo.id));
-      group.append(b);
+      groupInner.append(b);
     }
   }
 
@@ -676,15 +683,21 @@ const copyBtn = $('copy-link');
 copyBtn.addEventListener('click', async () => {
   const base = location.href.split('#')[0];
   const where = current ? current.id + (rival ? `+${rival.id}` : '') + `@${player.index}` : '';
+  const original = copyBtn.innerHTML;
+  const flash = (mark) => {
+    copyBtn.textContent = mark;
+    copyBtn.classList.add('flash');
+    setTimeout(() => { copyBtn.innerHTML = original; copyBtn.classList.remove('flash'); }, 1200);
+  };
+
   try {
     await navigator.clipboard.writeText(`${base}#${where}`);
-    copyBtn.textContent = '✓';
+    flash('✓');
   } catch {
     // Clipboard access can be refused; fall back to showing the link.
     location.hash = where;
-    copyBtn.textContent = '↑';
+    flash('↑');
   }
-  setTimeout(() => { copyBtn.textContent = '⧉'; }, 1200);
 });
 
 /* ───────────────────── help overlay ────────────────────── */
