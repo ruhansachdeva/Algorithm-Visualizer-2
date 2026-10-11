@@ -11,6 +11,7 @@
 import { CATEGORIES, VIEWS, HIT_TEST, findAlgo, ALL } from './registry.js';
 import { buildInputs, pointer, fitGridRows } from './inputs.js';
 import { icon } from './icons.js';
+import { getSeed, setSeed, reseed, rewind } from './rng.js';
 import { Player, record } from './engine/player.js';
 import { palette, fitCanvas } from './views/draw.js';
 import { barAt } from './views/array-view.js';
@@ -48,6 +49,7 @@ let raceInfo = null;       // how each side of the current race went
 let readInput = () => ({});
 let pendingStep = null;    // step requested by the URL, applied after recording
 let pendingRival = null;   // opponent named in the URL
+let pendingSeed = null;    // seed named in the URL
 
 /**
  * '#quick@120'            -> { id: 'quick', rival: null, step: 120 }
@@ -57,22 +59,32 @@ function parseHash() {
   const raw = location.hash.slice(1);
   if (!raw) return { id: '', rival: null, step: null };
 
-  const at = raw.indexOf('@');
-  const head = at === -1 ? raw : raw.slice(0, at);
-  const step = at === -1 ? null : Number(raw.slice(at + 1));
+  // Peel the parts off in the order they can be separated: the seed is
+  // last, so it has to come off FIRST — otherwise '#bubble@40~zz9' reads
+  // its step as "40~zz9", which is not a number, and the seed vanishes.
+  const tilde = raw.indexOf('~');
+  const withoutSeed = tilde === -1 ? raw : raw.slice(0, tilde);
+  const seed = tilde === -1 ? null : raw.slice(tilde + 1);
 
-  const plus = head.indexOf('+');
+  const at = withoutSeed.indexOf('@');
+  const names = at === -1 ? withoutSeed : withoutSeed.slice(0, at);
+  const step = at === -1 ? null : Number(withoutSeed.slice(at + 1));
+
+  const plus = names.indexOf('+');
   return {
-    id: plus === -1 ? head : head.slice(0, plus),
-    rival: plus === -1 ? null : head.slice(plus + 1),
+    id: plus === -1 ? names : names.slice(0, plus),
+    rival: plus === -1 ? null : names.slice(plus + 1),
     step: Number.isFinite(step) ? step : null,
+    seed,
   };
 }
 
-/** Keep the URL in step with what is on screen. */
+/** Keep the URL in step with what is on screen, seed included. */
 function syncHash() {
-  const want = current ? current.id + (rival ? `+${rival.id}` : '') : '';
-  if (parseHash().id !== current?.id || (parseHash().rival || null) !== (rival?.id || null)) {
+  if (!current) return;
+  const want = current.id + (rival ? `+${rival.id}` : '') + `~${getSeed()}`;
+  const now = parseHash();
+  if (now.id !== current.id || (now.rival || null) !== (rival?.id || null) || now.seed !== getSeed()) {
     location.hash = want;
   }
 }
@@ -352,6 +364,9 @@ function select(id) {
  */
 function rerun(preserveStep = false) {
   if (!current) return;
+  // Rewind first: a re-run with the same seed must produce the same input,
+  // otherwise stepping the speed slider would quietly change the data.
+  rewind();
   let frames;
   const input = readInput();
   try {
@@ -812,7 +827,9 @@ window.addEventListener('keydown', (e) => {
 const copyBtn = $('copy-link');
 copyBtn.addEventListener('click', async () => {
   const base = location.href.split('#')[0];
-  const where = current ? current.id + (rival ? `+${rival.id}` : '') + `@${player.index}` : '';
+  const where = current
+    ? `${current.id}${rival ? `+${rival.id}` : ''}@${player.index}~${getSeed()}`
+    : '';
   const original = copyBtn.innerHTML;
   const flash = (mark) => {
     copyBtn.textContent = mark;
@@ -878,6 +895,7 @@ const hashNow = parseHash();
 const fromHash = hashNow.id;
 pendingStep = hashNow.step;
 pendingRival = hashNow.rival;
+if (hashNow.seed) setSeed(hashNow.seed);
 let startId = 'bubble';
 try {
   startId = (fromHash && findAlgo(fromHash) && fromHash)
@@ -888,8 +906,9 @@ try {
 select(startId);
 
 window.addEventListener('hashchange', () => {
-  const { id, rival: r, step } = parseHash();
+  const { id, rival: r, step, seed } = parseHash();
   if (!id || !findAlgo(id)) return;
+  if (seed && seed !== getSeed()) { setSeed(seed); select(id); return; }
   if (id !== current?.id || (r || null) !== (rival?.id || null)) {
     pendingStep = step;
     pendingRival = r;

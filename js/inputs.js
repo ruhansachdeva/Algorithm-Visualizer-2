@@ -1,4 +1,4 @@
-import { random } from './rng.js';
+import { random, reseed } from './rng.js';
 
 /* ============================================================
    Input controls
@@ -372,7 +372,7 @@ const builders = {
         s.data = generateArray(s.size, v);
         rerun();
       }),
-      button('new array', () => { s.data = generateArray(s.size, s.dist); rerun(); }),
+      button('new array', () => { reseed(); s.data = generateArray(s.size, s.dist); rerun(); }),
     );
 
     if (algo.id === 'bogo' && s.size > 9) {
@@ -413,7 +413,7 @@ const builders = {
         targetField.querySelector('input').value = t;
         rerun();
       }),
-      button('new list', () => { regen(); rerun(); }),
+      button('new list', () => { reseed(); regen(); rerun(); }),
     );
 
     if (needsSorted) {
@@ -433,6 +433,7 @@ const builders = {
       button("Euclid's own example", () => { s.a = 1071; s.b = 462; rebuild(box, algo, rerun); }),
       button('coprime pair', () => { s.a = 1234; s.b = 4567; rebuild(box, algo, rerun); }),
       button('random', () => {
+        reseed();
         s.a = 2 + Math.floor(random() * 9000);
         s.b = 2 + Math.floor(random() * 9000);
         rebuild(box, algo, rerun);
@@ -486,7 +487,7 @@ const builders = {
 
     box.append(
       slider('points', { min: 3, max: 90, value: s.n }, (v) => { s.n = v; make(); rerun(); }),
-      button('new points', () => { make(); rerun(); }),
+      button('new points', () => { reseed(); make(); rerun(); }),
     );
     for (const [key, name] of [['scattered', 'scattered'], ['clustered', 'clustered'], ['circle', 'near a circle']]) {
       box.append(button(name, () => { s.shape = key; make(); rebuild(box, algo, rerun); }, { active: s.shape === key }));
@@ -757,6 +758,7 @@ const builders = {
         rerun();
       }),
       button('new values', () => {
+        reseed();
         d.signed = d.signed.map(() => Math.floor(random() * 24) - 11);
         rerun();
       }),
@@ -777,6 +779,7 @@ const builders = {
         rerun();
       }),
       button('new values', () => {
+        reseed();
         d.array = d.array.map(() => 1 + Math.floor(random() * 40));
         rerun();
       }),
@@ -821,6 +824,7 @@ const builders = {
       numsField,
       slider('target', { min: 1, max: 40, value: d.target }, (v) => { d.target = v; rerun(); }),
       button('new numbers', () => {
+        reseed();
         d.numbers = Array.from({ length: 6 }, () => 1 + Math.floor(random() * 15));
         rebuild(box, algo, rerun);
       }),
@@ -854,6 +858,7 @@ const builders = {
       button('classic example', () => { d.dims = [10, 30, 5, 60]; rebuild(box, algo, rerun); }),
       button('textbook chain', () => { d.dims = [30, 35, 15, 5, 10, 20, 25]; rebuild(box, algo, rerun); }),
       button('random', () => {
+        reseed();
         const k = 4 + Math.floor(random() * 3);
         d.dims = Array.from({ length: k }, () => 5 * (1 + Math.floor(random() * 12)));
         rebuild(box, algo, rerun);
@@ -875,6 +880,7 @@ const builders = {
       }),
       slider('bag capacity', { min: 3, max: 22, value: d.capacity }, (v) => { d.capacity = v; rerun(); }),
       button('new items', () => {
+        reseed();
         d.items = d.items.map(() => ({
           v: 10 * (1 + Math.floor(random() * 12)),
           w: 1 + Math.floor(random() * 7),
@@ -917,7 +923,7 @@ const builders = {
         if (targetField) targetField.querySelector('input').value = s.target;
         rerun();
       }, { active: s.sorted }),
-      button('new values', () => { regen(); if (targetField) targetField.querySelector('input').value = s.target; rerun(); }),
+      button('new values', () => { reseed(); regen(); if (targetField) targetField.querySelector('input').value = s.target; rerun(); }),
     );
     if (targetField) box.append(targetField);
 
@@ -947,7 +953,7 @@ const builders = {
     box.append(
       slider('nodes', { min: 4, max: 16, value: g.size }, (v) => { g.size = v; regen(); rerun(); }),
       slider('extra edges', { min: 0, max: 12, value: Math.round(g.extra * 10) }, (v) => { g.extra = v / 10; regen(); rerun(); }),
-      button('new graph', () => { regen(); rerun(); }),
+      button('new graph', () => { reseed(); regen(); rerun(); }),
       // Clearing the positions makes the view lay the graph out afresh.
       button('re-layout', () => {
         for (const node of g.cache.nodes) { delete node.x; delete node.y; }
@@ -996,7 +1002,7 @@ const builders = {
       }),
       kField,
       button('median', () => { s.k = Math.floor((s.size - 1) / 2); rebuild(box, algo, rerun); }),
-      button('new list', () => { s.data = generateArray(s.size, 'random'); rerun(); }),
+      button('new list', () => { reseed(); s.data = generateArray(s.size, 'random'); rerun(); }),
     );
     const hint = el('span', 'field', 'the list is NOT sorted — that is the point');
     hint.style.opacity = '.7';
@@ -1029,7 +1035,7 @@ const builders = {
     if (!isMaze) {
       box.append(
         button('clear walls', () => { g.walls = new Set(); rerun(); }),
-        button('random walls', () => { randomWalls(); rerun(); }),
+        button('random walls', () => { reseed(); randomWalls(); rerun(); }),
         button(g.weighted ? 'terrain: on' : 'terrain: off', (b) => {
           g.weighted = !g.weighted;
           b.textContent = g.weighted ? 'terrain: on' : 'terrain: off';
