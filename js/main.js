@@ -11,7 +11,7 @@
 import { CATEGORIES, VIEWS, HIT_TEST, findAlgo, ALL } from './registry.js';
 import { buildInputs, pointer, fitGridRows } from './inputs.js';
 import { Player, record } from './engine/player.js';
-import { palette } from './views/draw.js';
+import { palette, fitCanvas } from './views/draw.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -100,6 +100,8 @@ const player = new Player({
 });
 
 function paint(frame) {
+  if (frame?._error) { paintError(frame.note); return; }
+
   const draw = VIEWS[current?.view];
   if (!draw || !frame) return;
 
@@ -111,6 +113,19 @@ function paint(frame) {
   } else {
     draw(dom.canvas, frame, current);
   }
+}
+
+/** Draw a plain message where the visualization would be. */
+function paintError(message) {
+  const { ctx, w, h } = fitCanvas(dom.canvas);
+  ctx.font = '500 13px -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif';
+  ctx.fillStyle = palette('--c-swap');
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('something went wrong', w / 2, h / 2 - 12);
+  ctx.fillStyle = palette('--text-dim');
+  ctx.font = '12px ui-monospace, Menlo, monospace';
+  ctx.fillText(message.slice(0, 90), w / 2, h / 2 + 10);
 }
 
 /** The name, finish marker, caption and counters for one side of a race. */
@@ -221,8 +236,14 @@ function rerun(preserveStep = false) {
 
     if (rival) frames = buildRace(frames, record(rival.run(input), rival.maxFrames ?? 60000));
   } catch (err) {
+    // Show the failure in the stage rather than leaving the last run's
+    // picture on screen looking like it is still valid.
     console.error(err);
-    frames = [{ note: `the algorithm threw: ${err.message}`, array: [] }];
+    frames = [{
+      _error: true,
+      note: `${current.name} stopped: ${err.message}`,
+      stats: { status: 'error' },
+    }];
   }
   renderLegend(legendFor(frames, current));
   const keepAt = preserveStep ? player.index : 0;
