@@ -199,3 +199,7 @@ a `draw(canvas, frame)` function registered in the `VIEWS` map there.
 Frames are held in memory, so each run is capped (60,000 steps by default). An
 algorithm that legitimately needs more says so with `maxFrames` — the hard
 Sudoku takes about 213,000 steps, but its frames are 81 bytes each.
+
+## License
+
+MIT — see [LICENSE](LICENSE). Use it, change it, learn from it.
