@@ -304,6 +304,33 @@ body {
   gap: 16px;
 }
 
+.crumb {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 5px;
+}
+
+.crumb-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px 2px 6px;
+  border-radius: 99px;
+  font-size: 10.5px;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--cat, var(--accent));
+  background: color-mix(in srgb, var(--cat, var(--accent)) 13%, transparent);
+  border: 1px solid color-mix(in srgb, var(--cat, var(--accent)) 28%, transparent);
+}
+
+.crumb-blurb {
+  font-size: 11.5px;
+  color: var(--text-faint);
+}
+
 .stage-head h2 {
   margin: 0;
   font-size: 17px;

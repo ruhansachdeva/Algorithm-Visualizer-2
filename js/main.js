@@ -229,6 +229,23 @@ function buildSidebar(filterText = '') {
   }
 }
 
+/** A small category chip above the title: icon, name, and what the family is for. */
+function renderCrumb(algo) {
+  const cat = CATEGORIES.find((c) => c.id === algo.category);
+  const el = $('crumb');
+  el.replaceChildren();
+  if (!cat) return;
+
+  el.style.setProperty('--cat', cat.color || 'var(--accent)');
+  const chip = document.createElement('span');
+  chip.className = 'crumb-chip';
+  chip.append(icon(cat.id, 11), Object.assign(document.createElement('span'), { textContent: cat.name }));
+  el.append(chip);
+  if (cat.blurb) {
+    el.append(Object.assign(document.createElement('span'), { className: 'crumb-blurb', textContent: cat.blurb }));
+  }
+}
+
 /** The colour belonging to an algorithm's category. */
 function categoryColor(algo) {
   return CATEGORIES.find((c) => c.id === algo.category)?.color || 'var(--accent)';
@@ -279,6 +296,7 @@ function select(id) {
     b.classList.toggle('active', b.dataset.id === id);
   }
 
+  renderCrumb(algo);
   dom.title.textContent = algo.name;
   dom.about.textContent = algo.about || '';
 
