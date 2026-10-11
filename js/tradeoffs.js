@@ -584,4 +584,182 @@ export const TRADEOFFS = {
     useWhen: 'Optimising a chain of matrix products, or any interval-shaped problem.',
     avoid: 'Very long chains, where the cubic cost bites.',
   },
+
+  /* ──────────────────── String matching ────────────────────── */
+
+  'str-naive': {
+    pros: ['Four lines, no preprocessing, no memory.', 'Fine for short patterns in short text.'],
+    cons: ['O(n·m) worst case — repetitive text with a nearly-matching pattern is pathological.',
+           'Throws away everything it learned on each mismatch.'],
+    useWhen: 'Short strings, or one-off matching where clarity beats speed.',
+    avoid: 'Repetitive data, or matching in a hot loop.',
+  },
+  'str-kmp': {
+    pros: ['O(n+m) guaranteed, with no bad case.',
+           'Never re-reads a character of the text, so it works on a stream you cannot rewind.'],
+    cons: ['Usually slower than Boyer-Moore on ordinary prose, because it cannot skip ahead.',
+           'The prefix table takes a while to really understand.'],
+    useWhen: 'Streaming data, or when a guaranteed bound matters more than typical speed.',
+    avoid: 'Ordinary text search, where Boyer-Moore is simply faster.',
+  },
+  'str-z': {
+    pros: ['The same linear guarantee as KMP and considerably easier to understand.',
+           'The Z-array is useful in its own right for periodicity and repeated-substring problems.'],
+    cons: ['Needs the pattern and text concatenated, so O(n+m) extra memory.', 'Cannot stream.'],
+    useWhen: 'You want KMP\'s guarantee with clearer code, or need the Z-array itself.',
+    avoid: 'Memory-constrained streaming.',
+  },
+  'str-boyer-moore': {
+    pros: ['Fastest in practice on natural text — it reads right to left and can skip a whole pattern width.',
+           'Longer patterns search FASTER, which is counter-intuitive and genuinely useful.',
+           'Roughly what your editor\'s find does.'],
+    cons: ['O(n·m) worst case without the full good-suffix rule.',
+           'Preprocessing and extra tables.',
+           'The advantage shrinks on small alphabets like DNA.'],
+    useWhen: 'Natural text, a large alphabet, and a reasonably long pattern.',
+    avoid: 'Tiny alphabets, very short patterns, or streaming.',
+  },
+  'str-rabin-karp': {
+    pros: ['Extends naturally to searching for MANY patterns at once, which the others do not.',
+           'The rolling hash idea reappears everywhere — plagiarism detection, rsync, deduplication.',
+           'O(n+m) expected.'],
+    cons: ['O(n·m) worst case if hashes keep colliding.',
+           'Every hash match needs verifying, because different strings can collide.',
+           'A bad hash or modulus ruins it.'],
+    useWhen: 'Multiple patterns at once, or detecting duplicate blocks.',
+    avoid: 'A single pattern, where Boyer-Moore or KMP is simply better.',
+  },
+  'str-palindrome': {
+    pros: ['Easy to understand, O(1) memory.',
+           'Handling both odd and even centres is the one real insight, and it is visible here.'],
+    cons: ['O(n²), where Manacher\'s algorithm does the same job in O(n).'],
+    useWhen: 'Short strings, or explaining the centre-expansion idea.',
+    avoid: 'Long strings — use Manacher.',
+  },
+
+  /* ───────────────────── Backtracking ──────────────────────── */
+
+  'bt-subsets': {
+    pros: ['The skeleton behind subset-sum, the knapsack and every "choose some of these" problem.',
+           'O(n) memory despite 2ⁿ outputs, because it reuses one path.'],
+    cons: ['2ⁿ results — twenty items is a million, thirty is a billion.'],
+    useWhen: 'Small n, or with pruning that cuts most branches early.',
+    avoid: 'n beyond about 25 without strong pruning.',
+  },
+  'bt-permutations': {
+    pros: ['Generates every ordering with one swap per step and no extra memory.'],
+    cons: ['n! grows appallingly — ten items is 3.6 million, twenty is more than you can count.'],
+    useWhen: 'Fewer than about ten items, or exhaustive testing of small cases.',
+    avoid: 'Anything larger. If you are permuting to optimise, you want DP or a heuristic.',
+  },
+  'bt-n-queens': {
+    pros: ['Early rejection prunes enormous numbers of boards — 8 queens is 16 million placements brute force, a few thousand with pruning.',
+           'The clearest demonstration of why the constraint check belongs inside the loop, not after it.'],
+    cons: ['Still exponential; large boards are out of reach.'],
+    useWhen: 'Teaching constraint satisfaction, or small placement problems.',
+    avoid: 'Large instances — a proper CSP solver is better.',
+  },
+  'bt-coloring': {
+    pros: ['Models real scheduling directly — exams as nodes, clashes as edges, time slots as colours.',
+           'Finds a valid colouring whenever one exists.'],
+    cons: ['NP-complete for three or more colours, so exponential in the worst case.',
+           'Finds *a* colouring, not the minimum number of colours.'],
+    useWhen: 'Timetabling, register allocation, frequency assignment, at small scale.',
+    avoid: 'Large graphs — heuristics like DSATUR are the practical choice.',
+  },
+  'bt-sudoku': {
+    pros: ['Solves any valid puzzle with almost no code.',
+           'Shows plainly that a hard puzzle is hard because it defeats this strategy, not because it has more numbers.'],
+    cons: ['Plain backtracking is slow on adversarial puzzles — the hard one here takes over 200,000 steps.',
+           'Constraint propagation would cut that by orders of magnitude.'],
+    useWhen: 'Teaching backtracking, or solving ordinary puzzles.',
+    avoid: 'Puzzles designed to defeat brute force, without adding propagation.',
+  },
+  'bt-hanoi': {
+    pros: ['Three lines of logic, provably optimal at 2ⁿ−1 moves.',
+           'The clearest demonstration of recursion here — the self-similar structure is visible in the animation.'],
+    cons: ['Exponential output by necessity; 64 discs would outlast the universe.'],
+    useWhen: 'Teaching recursion. It is the canonical example.',
+    avoid: 'Treating it as a practical problem — it is a demonstration.',
+  },
+
+  /* ─────────────────────── Number theory ───────────────────── */
+
+  'math-sieve': {
+    pros: ['Every prime up to n in roughly O(n log log n) — near linear, without testing a single number for divisibility.',
+           'Simple, and both optimisations fall out of the structure.'],
+    cons: ['O(n) memory, so it cannot reach very large n.',
+           'Finds all primes up to a limit; it cannot test one large number.'],
+    useWhen: 'You need all primes below a few hundred million.',
+    avoid: 'Testing a single large number — use Miller-Rabin.',
+  },
+  'math-gcd': {
+    pros: ['About 2,300 years old and still what your computer runs.',
+           'O(log min(a,b)) — two four-digit numbers finish in under ten steps.',
+           'Extends to the modular inverse, which underpins RSA.'],
+    cons: ['Almost none. The subtraction-only variant is much slower, but the modulo version is excellent.'],
+    useWhen: 'Reducing fractions, modular arithmetic, anything number-theoretic.',
+    avoid: 'Nothing. This is simply the right algorithm.',
+  },
+  'math-fast-power': {
+    pros: ['Turns b multiplications into about log₂(b) — the reason public-key cryptography is feasible at all.',
+           'Works for any associative operation, including matrix multiplication, which gives O(log n) Fibonacci.'],
+    cons: ['Needs care with overflow; big-integer or modular arithmetic is usually required.',
+           'The simple version leaks timing information, which matters in cryptography.'],
+    useWhen: 'Modular exponentiation, matrix powers, anything repeated-squaring shaped.',
+    avoid: 'Cryptographic use without a constant-time implementation.',
+  },
+
+  /* ───────────────────────── Geometry ──────────────────────── */
+
+  'geo-graham': {
+    pros: ['O(n log n) regardless of the shape of the hull, which gift wrapping cannot promise.',
+           'Robust and widely implemented.'],
+    cons: ['Dominated by the initial sort.',
+           'Collinear points need deliberate handling and are a classic source of bugs.'],
+    useWhen: 'The general-purpose convex hull, especially when many points lie on the hull.',
+    avoid: 'When very few points are on the hull — gift wrapping can beat it.',
+  },
+  'geo-jarvis': {
+    pros: ['O(n·h), so it beats the Graham scan outright when the hull has few corners.',
+           'Needs no sort and is easy to understand.'],
+    cons: ['Collapses to O(n²) when most points are on the hull — points near a circle are the worst case.'],
+    useWhen: 'A tight cluster with a simple hull, or when h is known to be small.',
+    avoid: 'Points spread around a circle. The presets here make the difference visible.',
+  },
+  'geo-closest-pair': {
+    pros: ['O(n log n) where comparing every pair is O(n²) — about a tenth of the measurements on 60 points.',
+           'The strip argument is a lovely piece of reasoning: only a handful of points can possibly matter.'],
+    cons: ['Considerably more code than the brute-force version.',
+           'For small n the overhead means brute force actually wins.'],
+    useWhen: 'Many points — collision detection, clustering, nearest-neighbour queries.',
+    avoid: 'Under about 50 points, where brute force is simpler and faster.',
+  },
+
+  /* ────────────────────── Maze generation ──────────────────── */
+
+  'maze-backtracker': {
+    pros: ['Produces the most satisfying mazes to solve: long winding corridors and few dead ends.',
+           'Simple, and guaranteed to reach every cell.'],
+    cons: ['Recursion depth can equal the cell count, so large mazes need an explicit stack.',
+           'The long corridors make it fairly predictable once you notice the pattern.'],
+    useWhen: 'Mazes meant for a human to solve.',
+    avoid: 'Very large mazes without converting the recursion to a loop.',
+  },
+  'maze-prim': {
+    pros: ['Bushy mazes with many short branches — harder to solve by intuition.',
+           'No recursion, so no depth limit.'],
+    cons: ['Lots of dead ends, which some find tedious rather than challenging.',
+           'Holds a frontier list, so more memory than the backtracker.'],
+    useWhen: 'You want a maze that resists guessing.',
+    avoid: 'When long flowing corridors are the aesthetic you are after.',
+  },
+  'maze-division': {
+    pros: ['Builds walls instead of carving, which produces distinctive room-like chambers.',
+           'Naturally suited to generating at multiple scales.'],
+    cons: ['The long straight walls make the structure easy to read, so the mazes are easier to solve.',
+           'Can produce long featureless corridors.'],
+    useWhen: 'Architectural or room-based layouts — dungeon generation.',
+    avoid: 'When you want an organic maze with no obvious grid structure.',
+  },
 };
