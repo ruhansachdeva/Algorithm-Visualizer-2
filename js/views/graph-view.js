@@ -33,7 +33,7 @@ const GROUP_COLORS = [
 export function drawGraph(canvas, frame) {
   const { ctx, w, h } = fitCanvas(canvas);
   const C = colors();
-  const { nodes, edges, nodeState, edgeState, nodeLabel, nodeGroup, directed, weighted } = frame;
+  const { nodes, edges, nodeState, edgeState, nodeLabel, nodeGroup, edgeLabel, directed, weighted } = frame;
   if (!nodes?.length) return;
 
   // Positions are computed once, the first time a graph is drawn, and then
@@ -87,10 +87,12 @@ export function drawGraph(canvas, frame) {
       ctx.fill();
     }
 
-    // weight, on a small plate so the line doesn't cut through it
-    if (weighted) {
+    // weight, on a small plate so the line doesn't cut through it.
+    // `edgeLabel` lets an algorithm say something richer than the raw
+    // weight — max flow shows "carried/capacity" rather than just capacity.
+    if (weighted || edgeLabel) {
       const mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
-      const txt = String(e.w);
+      const txt = edgeLabel ? String(edgeLabel[i]) : String(e.w);
       ctx.font = '700 10px ui-monospace, Menlo, monospace';
       const tw = ctx.measureText(txt).width;
       fillRound(ctx, mx - tw / 2 - 4, my - 8, tw + 8, 15, 4, C.panel);
