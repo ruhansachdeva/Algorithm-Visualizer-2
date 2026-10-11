@@ -1,8 +1,8 @@
 # Algorithm Visualizer
 
-A browser-based visualizer for 75 classic algorithms — sorting, searching,
-pathfinding, graphs, trees, dynamic programming, string matching, backtracking
-and maze generation.
+A browser-based visualizer for 91 classic algorithms — sorting, searching,
+pathfinding, graphs, trees, dynamic programming, string matching, backtracking,
+number theory, geometry and maze generation.
 
 The successor to my terminal version, which had four algorithms and printed
 arrows under numbers.
@@ -86,15 +86,23 @@ move the start and goal.
 
 | Category | Count | |
 | --- | --- | --- |
-| Sorting | 20 | bubble, cocktail, selection, insertion, binary insertion, shell, comb, gnome, odd-even, merge, **Timsort**, quick, quick 3-way, heap, counting, radix, bucket, cycle, pancake, bogo |
-| Searching | 7 | linear, binary, jump, exponential, interpolation, ternary, Fibonacci |
-| Pathfinding | 6 | BFS, DFS, Dijkstra, A*, greedy best-first, bidirectional BFS |
-| Graphs | 11 | BFS, DFS, Dijkstra, Bellman-Ford, **Floyd-Warshall**, topological sort, union-find, Kruskal, Prim, cycle detection, **Tarjan's SCC** |
-| Trees | 13 | BST insert/search/delete, in/pre/post/level-order traversal, AVL insert, red-black insert, binary heap, trie insert/search, **Huffman coding** |
-| Dynamic programming | 8 | Fibonacci, LIS, coin change, subset sum, knapsack, LCS, edit distance, **matrix chain order** |
-| String matching | 4 | naive, KMP, Boyer-Moore, Rabin-Karp |
-| Backtracking | 3 | N-Queens, Sudoku, Towers of Hanoi |
-| Maze generation | 3 | recursive backtracker, randomized Prim, recursive division |
+| Sorting | 20 | bubble, cocktail, selection, insertion, binary insertion, shell, comb, gnome, odd-even, merge, **Timsort**★, **quick**★, quick 3-way, heap, counting, radix, bucket, cycle, pancake, bogo |
+| Searching | 8 | linear, **binary**★, quickselect, jump, exponential, interpolation, ternary, Fibonacci |
+| Pathfinding | 6 | BFS, DFS, Dijkstra, **A\***★, greedy best-first, bidirectional BFS |
+| Graphs | 13 | BFS, DFS, **Dijkstra**★, Bellman-Ford, Floyd-Warshall, topological sort, union-find, Kruskal, Prim, cycle detection, bipartite check, bridges & cut vertices, Tarjan's SCC |
+| Trees | 13 | BST insert/search/delete, in/pre/post/level-order traversal, **AVL**★, **red-black**★, binary heap, trie insert/search, Huffman coding |
+| Dynamic programming | 10 | Fibonacci, Kadane, LIS, coin change, subset sum, knapsack, rod cutting, **LCS**★, edit distance, matrix chain order |
+| String matching | 6 | naive, **KMP**★, Z-algorithm, **Boyer-Moore**★, Rabin-Karp, longest palindrome |
+| Backtracking | 6 | subsets, permutations, N-Queens, graph colouring, Sudoku, **Towers of Hanoi**★ |
+| Number theory | 3 | Sieve of Eratosthenes, Euclid's GCD, fast exponentiation |
+| Geometry | 3 | convex hull (Graham scan), convex hull (gift wrapping), closest pair of points |
+| Maze generation | 3 | **recursive backtracker**★, randomized Prim, recursive division |
+
+★ marks the one worth reaching for in that category. Select it and the panel
+explains the trade-off that earns it the spot — which is not always the best
+on paper. Quicksort keeps its star despite an O(n²) worst case because it wins
+in practice, and AVL and red-black are both starred because they genuinely
+split the job between reads and writes.
 
 ### Some things worth trying
 
@@ -109,8 +117,15 @@ move the start and goal.
   watched being carved.
 - Coin change with coins **1, 3, 4** making **6**. Greedy grabs the 4 and needs
   three coins; the table finds 3+3.
-- Run all four string matchers on the same text and compare the comparison
+- Run all five string matchers on the same text and compare the comparison
   counts in the live counters.
+- **Sieve of Eratosthenes** — watch the multiples of 2 go, then 3, then 5. By
+  11 there is almost nothing left to cross out.
+- **Convex hull**: switch the points between "clustered" and "near a circle",
+  then compare Graham scan against gift wrapping. Gift wrapping costs O(n·h),
+  so it wins on the cluster and collapses on the circle.
+- **Closest pair of points** on 60 points: about 11% of the measurements that
+  comparing every pair would take.
 - Set the array shape to **already sorted** and run **Timsort**: it finds one
   natural run and stops in 99 comparisons where merge sort grinds through 356.
   That is the whole reason Python and Java use it.
@@ -127,6 +142,12 @@ move the start and goal.
   the counters. On 31 sorted values AVL ends up height 5 and red-black height 8,
   but over 40 inserts red-black does fewer rotations. AVL searches faster,
   red-black writes faster — that trade is why both exist.
+
+## Finding your way around
+
+The sidebar groups algorithms into colour-coded categories you can fold away,
+and the colour follows through to the selected algorithm and its heading. Type
+in the search box to filter; `/` jumps there, `↑ ↓` move through the list.
 
 ## How it works
 
