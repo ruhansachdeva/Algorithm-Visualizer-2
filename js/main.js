@@ -81,7 +81,8 @@ const player = new Player({
     paint(frame);
     dom.scrub.max = String(Math.max(0, total - 1));
     dom.scrub.value = String(i);
-    dom.stepLabel.textContent = `step ${i + 1} / ${total}`;
+    const pct = total > 1 ? Math.round((i / (total - 1)) * 100) : 100;
+    dom.stepLabel.textContent = `step ${(i + 1).toLocaleString()} / ${total.toLocaleString()}  ·  ${pct}%`;
     if (frame._race) {
       dom.note.textContent = `${current.name} vs ${rival.name} — same input, stepped together`;
       renderStats(frame.a.stats);
