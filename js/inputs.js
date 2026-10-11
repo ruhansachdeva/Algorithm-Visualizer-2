@@ -29,6 +29,7 @@ export const state = {
     numbers: [3, 34, 4, 12, 5, 2], target: 9,
     items: [{ v: 60, w: 5 }, { v: 100, w: 4 }, { v: 120, w: 6 }, { v: 40, w: 3 }],
     dims: [30, 35, 15, 5, 10, 20, 25],
+    signed: [-2, 1, -3, 4, -1, 2, 1, -5, 4],
     capacity: 10,
   },
   grid:   {
@@ -583,6 +584,26 @@ const builders = {
       button('ALGORITHM / LOGARITHM', () => { d.a = 'ALGORITHM'; d.b = 'LOGARITHM'; rebuild(box, algo, rerun); }),
     );
     return () => ({ a: d.a || 'A', b: d.b || 'B' });
+  },
+
+  'dp-signed'(box, algo, rerun) {
+    const d = state.dp;
+    box.append(
+      slider('values', { min: 4, max: 24, value: d.signed.length }, (v) => {
+        d.signed = Array.from({ length: v }, () => Math.floor(Math.random() * 24) - 11);
+        rerun();
+      }),
+      button('new values', () => {
+        d.signed = d.signed.map(() => Math.floor(Math.random() * 24) - 11);
+        rerun();
+      }),
+      button('textbook example', () => { d.signed = [-2, 1, -3, 4, -1, 2, 1, -5, 4]; rebuild(box, algo, rerun); }),
+      button('all negative', () => { d.signed = [-8, -3, -6, -2, -5, -4]; rebuild(box, algo, rerun); }),
+    );
+    const hint = el('span', 'field', 'with every value negative the answer is the single least-bad one');
+    hint.style.opacity = '.7';
+    box.append(hint);
+    return () => ({ array: d.signed });
   },
 
   'dp-array'(box, algo, rerun) {

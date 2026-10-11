@@ -589,4 +589,73 @@ const matrixChain = {
   },
 };
 
-export const DP = [fib, lis, coinChange, subsetSum, knapsack, lcs, editDistance, matrixChain];
+
+/* ──────────────── Kadane: Maximum Subarray ─────────────── */
+
+const kadane = {
+  id: 'dp-kadane',
+  name: 'Maximum Subarray (Kadane)',
+  view: 'array',
+  input: 'dp-signed',
+  about: 'Find the run of consecutive values with the largest total. The trick is one question asked at every position: is it better to extend the run I am on, or to throw it away and start fresh here? Throwing away is right exactly when the run so far has gone negative — because a negative prefix can only drag down whatever follows. One pass, no table, O(n).',
+  cost: { best: 'O(n)', avg: 'O(n)', worst: 'O(n)', space: 'O(1)', stable: '—' },
+  pseudocode: [
+    'best = current = the first value',
+    'for each later value v:',
+    '  current = max(v, current + v)',
+    '    (starting fresh beats extending a negative run)',
+    '  best = max(best, current)',
+  ],
+  *run({ array }) {
+    const arr = array.slice();
+    const n = arr.length;
+    if (!n) { yield { array: arr, note: 'empty' }; return; }
+
+    let current = arr[0], best = arr[0];
+    let runStart = 0, bestStart = 0, bestEnd = 0;
+    let restarts = 0;
+
+    const f = (extra) => ({
+      array: arr,
+      stats: { 'running total': current, 'best found': best, restarts },
+      ...extra,
+    });
+
+    yield f({ cursor: 0, range: [0, 0], line: 0, note: `start with ${arr[0]}` });
+
+    for (let i = 1; i < n; i++) {
+      const extend = current + arr[i];
+      const fresh = arr[i];
+      const startOver = fresh > extend;
+
+      yield f({
+        cursor: i, range: [runStart, i], line: 2,
+        note: `extend to ${extend}, or start fresh at ${fresh}? ${startOver ? 'start fresh — the run so far was dragging it down' : 'extend'}`,
+      });
+
+      if (startOver) { current = fresh; runStart = i; restarts++; }
+      else current = extend;
+
+      if (current > best) {
+        best = current;
+        bestStart = runStart;
+        bestEnd = i;
+        yield f({
+          cursor: i, range: [runStart, i], sorted: rangeOf(bestStart, bestEnd), line: 4,
+          note: `new best: ${best} over indices ${bestStart}..${bestEnd}`,
+        });
+      } else {
+        yield f({ cursor: i, range: [runStart, i], sorted: rangeOf(bestStart, bestEnd), line: 4, note: `running total ${current}, best still ${best}` });
+      }
+    }
+
+    yield f({
+      sorted: rangeOf(bestStart, bestEnd), line: 4,
+      note: `largest run is ${best}, from index ${bestStart} to ${bestEnd}: [${arr.slice(bestStart, bestEnd + 1).join(', ')}]`,
+    });
+  },
+};
+
+const rangeOf = (a, b) => Array.from({ length: b - a + 1 }, (_, k) => a + k);
+
+export const DP = [fib, kadane, lis, coinChange, subsetSum, knapsack, lcs, editDistance, matrixChain];
