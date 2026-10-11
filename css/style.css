@@ -256,20 +256,73 @@ body {
 .stage {
   flex: 1;
   min-height: 0;
-  position: relative;
+  display: flex;
+  gap: 10px;
+}
+
+/* One pane normally; two side by side when racing. */
+.race-pane {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
   background: var(--bg-sunken);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   overflow: hidden;
 }
 
-.stage canvas { display: block; width: 100%; height: 100%; }
-
-.stage-overlay {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
+.race-pane canvas {
+  display: block;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
 }
+
+/* Head and foot only appear in race mode. */
+.race-head,
+.race-foot {
+  flex: none;
+  padding: 5px 10px;
+  font-size: 11.5px;
+  font-family: var(--mono);
+  border-bottom: 1px solid var(--border);
+  display: none;
+}
+
+.race-foot {
+  border-bottom: none;
+  border-top: 1px solid var(--border);
+  color: var(--text-dim);
+  min-height: 24px;
+}
+
+/* These two rules reveal the head and foot in race mode. The head keeps
+   its flex layout so the name and the "finished" marker sit at opposite
+   ends — using `block` here would collapse them together. */
+body.racing .race-head { display: flex; }
+body.racing .race-foot { display: block; }
+
+.race-head {
+  font-weight: 600;
+  color: var(--text);
+  display: none;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.race-head .finished {
+  color: var(--c-sorted);
+  font-weight: 700;
+}
+
+.race-foot .counters {
+  color: var(--text-faint);
+  font-size: 10.5px;
+}
+
+.race-picker select { max-width: 160px; }
 
 /* ───────────────────────── controls ───────────────────────── */
 

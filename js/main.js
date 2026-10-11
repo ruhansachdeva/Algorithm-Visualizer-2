@@ -31,20 +31,47 @@ const dom = {
   speed: $('speed'),
   play: $('btn-play'),
   count: $('algo-count'),
+  canvasB: $('canvas-b'),
+  paneB: $('pane-b'),
+  headA: $('head-a'),
+  headB: $('head-b'),
+  footA: $('foot-a'),
+  footB: $('foot-b'),
+  raceSelect: $('race-select'),
 };
 
 let current = null;        // the selected algorithm
+let rival = null;          // the algorithm it is racing against, if any
 let readInput = () => ({});
 let pendingStep = null;    // step requested by the URL, applied after recording
+let pendingRival = null;   // opponent named in the URL
 
-/** '#quick@120' -> { id: 'quick', step: 120 } */
+/**
+ * '#quick@120'            -> { id: 'quick', rival: null, step: 120 }
+ * '#grid-bfs+grid-astar'  -> a race, shareable as a link
+ */
 function parseHash() {
   const raw = location.hash.slice(1);
-  if (!raw) return { id: '', step: null };
+  if (!raw) return { id: '', rival: null, step: null };
+
   const at = raw.indexOf('@');
-  if (at === -1) return { id: raw, step: null };
-  const step = Number(raw.slice(at + 1));
-  return { id: raw.slice(0, at), step: Number.isFinite(step) ? step : null };
+  const head = at === -1 ? raw : raw.slice(0, at);
+  const step = at === -1 ? null : Number(raw.slice(at + 1));
+
+  const plus = head.indexOf('+');
+  return {
+    id: plus === -1 ? head : head.slice(0, plus),
+    rival: plus === -1 ? null : head.slice(plus + 1),
+    step: Number.isFinite(step) ? step : null,
+  };
+}
+
+/** Keep the URL in step with what is on screen. */
+function syncHash() {
+  const want = current ? current.id + (rival ? `+${rival.id}` : '') : '';
+  if (parseHash().id !== current?.id || (parseHash().rival || null) !== (rival?.id || null)) {
+    location.hash = want;
+  }
 }
 
 /* ───────────────────────── player ──────────────────────── */
@@ -55,9 +82,15 @@ const player = new Player({
     dom.scrub.max = String(Math.max(0, total - 1));
     dom.scrub.value = String(i);
     dom.stepLabel.textContent = `step ${i + 1} / ${total}`;
-    dom.note.textContent = frame.note || '';
-    renderStats(frame.stats);
-    highlightLine(frame.line);
+    if (frame._race) {
+      dom.note.textContent = `${current.name} vs ${rival.name} — same input, stepped together`;
+      renderStats(frame.a.stats);
+      highlightLine(frame.a.line);
+    } else {
+      dom.note.textContent = frame.note || '';
+      renderStats(frame.stats);
+      highlightLine(frame.line);
+    }
   },
   onPlayState: (playing) => {
     dom.play.textContent = playing ? '❙❙' : '▶';
@@ -67,7 +100,35 @@ const player = new Player({
 
 function paint(frame) {
   const draw = VIEWS[current?.view];
-  if (draw && frame) draw(dom.canvas, frame, current);
+  if (!draw || !frame) return;
+
+  if (frame._race) {
+    draw(dom.canvas, frame.a, current);
+    draw(dom.canvasB, frame.b, rival);
+    writeRaceSide(dom.headA, dom.footA, current, frame.a, frame.doneA);
+    writeRaceSide(dom.headB, dom.footB, rival, frame.b, frame.doneB);
+  } else {
+    draw(dom.canvas, frame, current);
+  }
+}
+
+/** The name, finish marker, caption and counters for one side of a race. */
+function writeRaceSide(head, foot, algo, frame, done) {
+  head.replaceChildren(
+    Object.assign(document.createElement('span'), { textContent: algo.name }),
+    Object.assign(document.createElement('span'), {
+      className: done ? 'finished' : '',
+      textContent: done ? 'finished' : '',
+    }),
+  );
+  const note = Object.assign(document.createElement('div'), { textContent: frame.note || '' });
+  const counters = Object.assign(document.createElement('div'), {
+    className: 'counters',
+    textContent: frame.stats
+      ? Object.entries(frame.stats).map(([k, v]) => `${k} ${typeof v === 'number' ? v.toLocaleString() : v}`).join('  ·  ')
+      : '',
+  });
+  foot.replaceChildren(note, counters);
 }
 
 /* ───────────────────────── sidebar ─────────────────────── */
@@ -120,6 +181,13 @@ function select(id) {
   renderCost(algo.cost);
   renderPseudocode(algo.pseudocode);
 
+  fillRacePicker(algo);
+  if (pendingRival) {
+    const r = findAlgo(pendingRival);
+    if (r && rivalsFor(algo).some((o) => o.id === r.id)) setRival(r);
+    pendingRival = null;
+  }
+
   // Grids are sized to the stage, so shape them before the first run.
   if (algo.view === 'grid') fitGridRows(dom.canvas);
 
@@ -128,7 +196,7 @@ function select(id) {
 
   // remember the choice across reloads
   try { localStorage.setItem('av2:last', id); } catch {}
-  if (parseHash().id !== id) location.hash = id;
+  syncHash();
 }
 
 /**
@@ -139,11 +207,14 @@ function select(id) {
 function rerun(preserveStep = false) {
   if (!current) return;
   let frames;
+  const input = readInput();
   try {
     // Most runs fit comfortably in the default budget. The ones that don't
     // say so themselves — a hard sudoku legitimately takes 200k+ steps, and
     // its frames are 81 bytes each, so it can afford a bigger allowance.
-    frames = record(current.run(readInput()), current.maxFrames ?? 60000);
+    frames = record(current.run(input), current.maxFrames ?? 60000);
+
+    if (rival) frames = buildRace(frames, record(rival.run(input), rival.maxFrames ?? 60000));
   } catch (err) {
     console.error(err);
     frames = [{ note: `the algorithm threw: ${err.message}`, array: [] }];
@@ -158,6 +229,28 @@ function rerun(preserveStep = false) {
     player.seek(pendingStep);
     pendingStep = null;
   }
+}
+
+/**
+ * Zip two runs into one timeline, so a single playhead drives both.
+ *
+ * The shorter run holds its last frame once it finishes, which is what
+ * makes the race readable: one side visibly stops while the other is
+ * still working. Frames are shared by reference, not copied.
+ */
+function buildRace(a, b) {
+  const n = Math.max(a.length, b.length);
+  const out = new Array(n);
+  for (let i = 0; i < n; i++) {
+    out[i] = {
+      _race: true,
+      a: a[Math.min(i, a.length - 1)],
+      b: b[Math.min(i, b.length - 1)],
+      doneA: i >= a.length - 1,
+      doneB: i >= b.length - 1,
+    };
+  }
+  return out;
 }
 
 /**
@@ -181,7 +274,8 @@ const LEGEND_KEYS = [
 function legendFor(frames, algo) {
   if (algo.legend) return algo.legend;
   const used = new Set();
-  for (const f of frames) {
+  for (const raw of frames) {
+    const f = raw._race ? raw.a : raw;
     for (const [key] of LEGEND_KEYS) {
       if (used.has(key)) continue;
       const v = f[key];
@@ -268,6 +362,56 @@ player.setSpeed(Number(dom.speed.value));
 
 dom.filter.addEventListener('input', () => buildSidebar(dom.filter.value));
 
+/* ───────────────────── race mode ───────────────────────── */
+
+/**
+ * Who can an algorithm race? Anything in the same category drawn the same
+ * way from the same input — so BFS can race A*, and BST Insert can race
+ * AVL Insert, but nothing can race a maze generator (different category,
+ * and they rewrite the board as they go).
+ */
+function rivalsFor(algo) {
+  // Graph algorithms also have to agree on the SHAPE of graph they need —
+  // feeding an undirected unweighted graph to a topological sort would
+  // produce confident nonsense rather than an error.
+  const sameGraphKind = (o) => JSON.stringify(o.graph ?? null) === JSON.stringify(algo.graph ?? null);
+
+  return ALL.filter((o) =>
+    o.id !== algo.id &&
+    o.category === algo.category &&
+    o.view === algo.view &&
+    o.input === algo.input &&
+    sameGraphKind(o));
+}
+
+function fillRacePicker(algo) {
+  const options = rivalsFor(algo);
+  dom.raceSelect.replaceChildren();
+  dom.raceSelect.append(Object.assign(document.createElement('option'), { value: '', textContent: 'off' }));
+  for (const o of options) {
+    dom.raceSelect.append(Object.assign(document.createElement('option'), { value: o.id, textContent: o.name }));
+  }
+  dom.raceSelect.disabled = options.length === 0;
+  $('race-wrap').style.opacity = options.length ? '' : '.4';
+
+  // Keep racing the same opponent across a switch when that still makes sense.
+  if (rival && options.some((o) => o.id === rival.id)) dom.raceSelect.value = rival.id;
+  else setRival(null);
+}
+
+function setRival(algo) {
+  rival = algo;
+  document.body.classList.toggle('racing', !!algo);
+  dom.paneB.hidden = !algo;
+  dom.raceSelect.value = algo ? algo.id : '';
+}
+
+dom.raceSelect.addEventListener('change', () => {
+  setRival(dom.raceSelect.value ? findAlgo(dom.raceSelect.value) : null);
+  syncHash();
+  rerun();
+});
+
 /* ───────────────── drawing on the canvas ───────────────── */
 /* Views that support it (the pathfinding grid) let you draw
    walls and drag the start/goal around with the mouse.        */
@@ -309,7 +453,7 @@ const themeBtn = $('theme-toggle');
 function applyTheme(t) {
   document.documentElement.dataset.theme = t;
   try { localStorage.setItem('av2:theme', t); } catch {}
-  renderLegend(current?.legend || []);
+  renderLegend(current ? legendFor(player.frames, current) : []);
   paint(player.frames[player.index]);
 }
 themeBtn.addEventListener('click', () => {
@@ -337,6 +481,7 @@ buildSidebar();
 const hashNow = parseHash();
 const fromHash = hashNow.id;
 pendingStep = hashNow.step;
+pendingRival = hashNow.rival;
 let startId = 'bubble';
 try {
   startId = (fromHash && findAlgo(fromHash) && fromHash)
@@ -347,9 +492,13 @@ try {
 select(startId);
 
 window.addEventListener('hashchange', () => {
-  const { id, step } = parseHash();
-  if (id && findAlgo(id)) {
-    if (id !== current?.id) { pendingStep = step; select(id); }
-    else if (step !== null) player.seek(step);
+  const { id, rival: r, step } = parseHash();
+  if (!id || !findAlgo(id)) return;
+  if (id !== current?.id || (r || null) !== (rival?.id || null)) {
+    pendingStep = step;
+    pendingRival = r;
+    select(id);
+  } else if (step !== null) {
+    player.seek(step);
   }
 });

@@ -40,8 +40,16 @@
     </div>
 
     <div class="stage" id="stage">
-      <canvas id="canvas"></canvas>
-      <div class="stage-overlay" id="stage-overlay"></div>
+      <div class="race-pane" id="pane-a">
+        <div class="race-head" id="head-a"></div>
+        <canvas id="canvas"></canvas>
+        <div class="race-foot" id="foot-a"></div>
+      </div>
+      <div class="race-pane" id="pane-b" hidden>
+        <div class="race-head" id="head-b"></div>
+        <canvas id="canvas-b"></canvas>
+        <div class="race-foot" id="foot-b"></div>
+      </div>
     </div>
 
     <!-- playback -->
@@ -62,6 +70,11 @@
       <label class="speed">
         speed
         <input type="range" id="speed" min="1" max="100" value="55">
+      </label>
+
+      <label class="speed race-picker" id="race-wrap">
+        race
+        <select id="race-select"><option value="">off</option></select>
       </label>
     </div>
 

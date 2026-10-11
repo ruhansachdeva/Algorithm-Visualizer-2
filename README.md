@@ -48,6 +48,28 @@ You can also drag the scrubber to any point, and the URL carries your place —
 `#quick@120` opens Quick Sort paused at step 120, so a specific moment is
 linkable.
 
+## Race mode
+
+The **race** dropdown next to the speed slider runs a second algorithm beside
+the first, on exactly the same input, stepped together. When one finishes it
+freezes and says so while the other carries on — which is the whole point.
+
+Races are linkable too: `#grid-bfs+grid-astar` opens BFS against A\*.
+
+Worth racing:
+
+| | |
+| --- | --- |
+| `#grid-bfs+grid-astar` | same shortest path; A\* visits a third of the cells |
+| `#grid-dijkstra+grid-greedy` | greedy finishes sooner and takes a worse route |
+| `#bst-insert+avl-insert` | set shape to "already sorted" and watch one collapse |
+| `#avl-insert+rb-insert` | AVL ends shorter, red-black rotates less |
+| `#timsort+merge` | on sorted input Timsort stops almost immediately |
+| `#str-naive+str-kmp` | count the comparisons each one spends |
+
+Only algorithms that take the same kind of input can race, so the dropdown
+only ever offers sensible opponents.
+
 On the pathfinding board you can **drag to draw walls** and **drag S or G** to
 move the start and goal.
 
