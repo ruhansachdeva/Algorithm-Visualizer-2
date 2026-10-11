@@ -21,6 +21,7 @@
   </div>
   <div class="topbar-right">
     <span class="algo-count" id="algo-count"></span>
+    <button class="icon-btn" id="help-toggle" title="Keyboard shortcuts (?)" aria-label="Keyboard shortcuts">?</button>
     <button class="icon-btn" id="theme-toggle" title="Toggle light / dark" aria-label="Toggle theme">◐</button>
   </div>
 </header>
@@ -118,6 +119,26 @@
   </aside>
 
 </main>
+
+<!-- Keyboard shortcut help, toggled with ? -->
+<div class="overlay" id="help" hidden>
+  <div class="help-card" role="dialog" aria-modal="true" aria-label="Keyboard shortcuts">
+    <h2>Keyboard shortcuts</h2>
+    <dl>
+      <dt>space</dt><dd>play / pause</dd>
+      <dt>→ ←</dt><dd>one step forward / back</dd>
+      <dt>shift + → ←</dt><dd>jump 25 steps</dd>
+      <dt>r</dt><dd>back to the first step</dd>
+      <dt>n</dt><dd>new input, re-run</dd>
+      <dt>home / end</dt><dd>first / last step</dd>
+      <dt>/</dt><dd>jump to the search box</dd>
+      <dt>t</dt><dd>light / dark</dd>
+      <dt>?</dt><dd>this list</dd>
+      <dt>esc</dt><dd>close this / clear the search</dd>
+    </dl>
+    <p class="help-foot">The URL remembers where you are: <code>#quick@120</code> opens Quick Sort at step 120, and <code>#grid-bfs+grid-astar</code> opens a race.</p>
+  </div>
+</div>
 
 <script type="module" src="js/main.js"></script>
 </body>

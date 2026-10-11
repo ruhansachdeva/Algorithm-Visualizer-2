@@ -435,7 +435,27 @@ dom.canvas.addEventListener('contextmenu', (e) => {
 
 /* keyboard: space plays, arrows step, r resets */
 window.addEventListener('keydown', (e) => {
+  // Escape works even from inside a field, so there is always a way out.
+  if (e.key === 'Escape') {
+    if (!help.hidden) { toggleHelp(false); return; }
+    if (document.activeElement === dom.filter) {
+      dom.filter.value = '';
+      buildSidebar('');
+      dom.filter.blur();
+    }
+    return;
+  }
   if (e.target.matches('input, select, textarea')) return;
+
+  switch (e.key) {
+    case '?': e.preventDefault(); toggleHelp(); return;
+    case '/': e.preventDefault(); dom.filter.focus(); dom.filter.select(); return;
+    case 't': case 'T':
+      applyTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark');
+      return;
+  }
+  if (!help.hidden) return;   // the overlay swallows playback keys
+
   switch (e.key) {
     case ' ':          e.preventDefault(); player.toggle(); break;
     case 'ArrowRight': e.preventDefault(); player.step(e.shiftKey ? 25 : 1); break;
@@ -446,6 +466,14 @@ window.addEventListener('keydown', (e) => {
     case 'End':        player.toEnd(); break;
   }
 });
+
+/* ───────────────────── help overlay ────────────────────── */
+
+const help = $('help');
+const toggleHelp = (show) => { help.hidden = show === undefined ? !help.hidden : !show; };
+
+$('help-toggle').addEventListener('click', () => toggleHelp());
+help.addEventListener('click', () => toggleHelp(false));   // click anywhere to dismiss
 
 /* ───────────────────── theme & resize ──────────────────── */
 
