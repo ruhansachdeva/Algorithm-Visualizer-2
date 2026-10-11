@@ -18,6 +18,7 @@ export const state = {
   string: { text: 'ABACADABRABRACADABRA', pattern: 'ABRA' },
   words:  { list: 'CAT, CAR, CARD, CARE, DOG, DO, DONE', target: 'CARD' },
   huffman:{ text: 'ABRACADABRA' },
+  palindrome: { text: 'BANANARAMA' },
   queens: { n: 8, findAll: false },
   sudoku: { which: 'easy' },
   hanoi:  { n: 4 },
@@ -413,6 +414,28 @@ const builders = {
       box.append(hint);
     }
     return () => ({ array: s.data, target: s.target });
+  },
+
+  /* ── one string to search inside ── */
+  palindrome(box, algo, rerun) {
+    const s = state.palindrome;
+    const f = field('text');
+    const input = el('input');
+    input.type = 'text';
+    input.style.width = '260px';
+    input.value = s.text;
+    input.addEventListener('input', () => { s.text = input.value.toUpperCase().slice(0, 34); input.value = s.text; rerun(); });
+    f.append(input);
+    box.append(
+      f,
+      button('odd-length answer', () => { s.text = 'BANANARAMA'; rebuild(box, algo, rerun); }),
+      button('even-length answer', () => { s.text = 'FORGEEKSSKEEGFOR'; rebuild(box, algo, rerun); }),
+      button('no palindrome', () => { s.text = 'ABCDEFG'; rebuild(box, algo, rerun); }),
+    );
+    const hint = el('span', 'field', 'even-length answers need a centre that sits between two characters');
+    hint.style.opacity = '.7';
+    box.append(hint);
+    return () => ({ text: s.text });
   },
 
   /* ── a short text to compress ── */

@@ -12,6 +12,7 @@
    ============================================================ */
 
 import { STRING_LEGEND } from '../../views/string-view.js';
+import { PALINDROME } from './palindrome.js';
 
 const base = { view: 'string', input: 'string', legend: STRING_LEGEND };
 
@@ -294,4 +295,4 @@ const boyerMoore = {
   },
 };
 
-export const STRINGS = [naive, kmp, boyerMoore, rabinKarp];
+export const STRINGS = [naive, kmp, boyerMoore, rabinKarp, ...PALINDROME];
