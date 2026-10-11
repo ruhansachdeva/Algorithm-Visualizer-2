@@ -17,6 +17,7 @@ const SUITES = [
   './graphs.test.mjs',
   './maxflow.test.mjs',
   './trees.test.mjs',
+  './segment.test.mjs',
   './dp.test.mjs',
   './strings.test.mjs',
   './backtracking.test.mjs',

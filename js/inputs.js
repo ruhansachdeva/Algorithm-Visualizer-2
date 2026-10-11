@@ -18,6 +18,7 @@ export const state = {
   kth:    { size: 24, k: 11, data: null },
   graph:  { size: 9, extra: 0.35, negativeCycle: false, cache: null, key: '' },
   tree:   { size: 10, sorted: false, values: null, target: null },
+  segment:{ size: 8, values: null, from: 2, to: 5 },
   string: { text: 'ABACADABRABRACADABRA', pattern: 'ABRA' },
   words:  { list: 'CAT, CAR, CARD, CARE, DOG, DO, DONE', target: 'CARD' },
   huffman:{ text: 'ABRACADABRA' },
