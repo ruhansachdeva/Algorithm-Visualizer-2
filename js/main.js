@@ -418,9 +418,9 @@ function renderRaceSummary() {
   } else {
     verdict.append(
       Object.assign(document.createElement('b'), { textContent: faster.name }),
-      ` finished in ${Math.min(aSteps, bSteps).toLocaleString()} steps against ${Math.max(aSteps, bSteps).toLocaleString()} — `,
+      ` finished first — ${Math.min(aSteps, bSteps).toLocaleString()} steps against ${Math.max(aSteps, bSteps).toLocaleString()}, `,
       Object.assign(document.createElement('span'), { className: 'ratio', textContent: `${ratio.toFixed(1)}×` }),
-      ' sooner.',
+      ' fewer.',
     );
   }
 
@@ -486,7 +486,7 @@ function renderRaceSummary() {
   detail.append(Object.assign(document.createElement('p'), {
     className: 'race-footnote',
     textContent: shared.length
-      ? 'Bars are scaled against the larger value in each row. Shorter means fewer, which is not always better — fewer comparisons is good, fewer characters skipped is not.'
+      ? 'Bars are scaled against the larger value in each row. A step is one frame of this animation, including any setup — KMP builds its table before it searches, so it can finish in more steps than naive search while doing far less real work. The counters below are the better guide.'
       : 'These two report different counters, so there is nothing to line up beyond the step count.',
   }));
 }
