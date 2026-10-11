@@ -654,3 +654,31 @@ input[type="range"]::-moz-range-thumb {
   padding: 1px 4px;
   border-radius: 3px;
 }
+
+/* ───────────────────── keyboard focus ──────────────────── */
+/* Buttons had no visible focus state, so tabbing through the UI
+   was invisible. :focus-visible shows the ring for keyboard users
+   without putting an outline on every mouse click.               */
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+.algo-btn:focus-visible { outline-offset: -2px; }
+
+/* Let the sidebar be reached and skipped past with one key. */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  background: var(--bg-panel);
+  color: var(--text);
+  padding: 8px 14px;
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  font-size: 12.5px;
+  z-index: 100;
+}
+.skip-link:focus { left: 10px; top: 10px; }
