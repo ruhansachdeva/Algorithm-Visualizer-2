@@ -357,7 +357,16 @@ dom.scrub.addEventListener('input', () => {
   player.seek(Number(dom.scrub.value));
 });
 
-dom.speed.addEventListener('input', () => player.setSpeed(Number(dom.speed.value)));
+// Speed is a preference, not a per-algorithm setting, so it persists.
+try {
+  const savedSpeed = localStorage.getItem('av2:speed');
+  if (savedSpeed) dom.speed.value = savedSpeed;
+} catch {}
+
+dom.speed.addEventListener('input', () => {
+  player.setSpeed(Number(dom.speed.value));
+  try { localStorage.setItem('av2:speed', dom.speed.value); } catch {}
+});
 player.setSpeed(Number(dom.speed.value));
 
 dom.filter.addEventListener('input', () => buildSidebar(dom.filter.value));
