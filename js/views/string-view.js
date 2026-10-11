@@ -26,7 +26,7 @@ const PAD = 18;
 export function drawString(canvas, frame) {
   const { ctx, w, h } = fitCanvas(canvas);
   const C = colors();
-  const { text = '', pattern = '', offset = 0, at = -1, ok = 0, mismatch = false, found = [], table } = frame;
+  const { text = '', pattern = '', offset = 0, at = -1, ok = 0, mismatch = false, found = [], table, span = null, probe = null } = frame;
   if (!text) return;
 
   const n = text.length;
@@ -43,6 +43,11 @@ export function drawString(canvas, frame) {
 
   const foundSet = new Set();
   for (const f of found) for (let k = 0; k < pattern.length; k++) foundSet.add(f + k);
+  // `span` marks a stretch of the text in its own right — used by the
+  // algorithms that find something inside one string rather than matching
+  // a second one against it.
+  if (span) for (let i = span[0]; i <= span[1]; i++) foundSet.add(i);
+  const probeSet = new Set(probe || []);
 
   /* ── the text ── */
   label(ctx, 'text', x0, topY - 9, { size: 9.5, color: C.faint, align: 'left', baseline: 'bottom', mono: false });
@@ -55,6 +60,7 @@ export function drawString(canvas, frame) {
     let bg = C.sunken;
     if (foundSet.has(i)) bg = C.found;
     else if (inWindow) bg = C.range;
+    if (probeSet.has(i)) bg = mismatch ? C.swap : C.compare;
     if (comparing) bg = mismatch ? C.swap : C.compare;
 
     fillRound(ctx, x + 1, topY, cw - 2, chH, 4, bg);
