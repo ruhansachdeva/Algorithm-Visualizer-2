@@ -508,9 +508,14 @@ window.addEventListener('resize', () => {
 
 dom.count.textContent = `${ALL.length} algorithms`;
 
+// An explicit choice wins; otherwise follow whatever the system is set to.
 try {
   const saved = localStorage.getItem('av2:theme');
-  if (saved) document.documentElement.dataset.theme = saved;
+  if (saved) {
+    document.documentElement.dataset.theme = saved;
+  } else if (window.matchMedia?.('(prefers-color-scheme: light)').matches) {
+    document.documentElement.dataset.theme = 'light';
+  }
 } catch {}
 
 buildSidebar();
