@@ -466,7 +466,40 @@ body.racing .race-foot { display: block; }
   font-size: 10.5px;
 }
 
-.race-picker select { max-width: 160px; }
+/* The race control reads as one unit: a label and its picker together. */
+.race-picker {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--bg-sunken);
+}
+
+.race-picker > span,
+.race-picker::before {
+  padding: 0 9px;
+}
+
+.race-picker select {
+  max-width: 190px;
+  border: none;
+  border-left: 1px solid var(--border);
+  border-radius: 0;
+  background-color: transparent;
+  padding-top: 7px;
+  padding-bottom: 7px;
+}
+
+/* While a race is on, the control is tinted so it is obvious why there
+   are two panes. */
+body.racing .race-picker {
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent);
+}
+body.racing .race-picker select { color: var(--text); font-weight: 600; }
 
 /* ───────────────────────── controls ───────────────────────── */
 
@@ -589,7 +622,8 @@ input[type="range"]::-moz-range-thumb {
 
 .field input[type="text"],
 .field input[type="number"],
-.field select {
+.field select,
+.race-picker select {
   background: var(--bg-sunken);
   border: 1px solid var(--border);
   border-radius: 7px;
@@ -599,6 +633,24 @@ input[type="range"]::-moz-range-thumb {
   font-size: 12px;
   outline: none;
 }
+
+/* Drop the OS select chrome and draw our own chevron, so the control
+   matches everything around it instead of looking bolted on. */
+.field select,
+.race-picker select {
+  -webkit-appearance: none;
+  appearance: none;
+  padding-right: 26px;
+  cursor: pointer;
+  background-image: linear-gradient(45deg, transparent 50%, currentColor 50%),
+                    linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position: calc(100% - 14px) calc(50% + 1px), calc(100% - 9px) calc(50% + 1px);
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+  transition: border-color .12s, background-color .12s;
+}
+.field select:hover,
+.race-picker select:hover { border-color: color-mix(in srgb, var(--accent) 50%, var(--border)); }
 .field input[type="text"] { width: 150px; }
 .field input[type="number"] { width: 64px; }
 .field input:focus, .field select:focus { border-color: var(--accent); }
