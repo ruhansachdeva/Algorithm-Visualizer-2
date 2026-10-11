@@ -52,6 +52,7 @@ export class Player {
     this.index = 0;
     this.playing = false;
     this.speed = 55;
+    this.loop = false;
 
     this._raf = null;
     this._lastTick = 0;
@@ -139,8 +140,15 @@ export class Player {
         if (this.index >= this.frames.length - 1) {
           this.index = this.frames.length - 1;
           this.emit();
-          this.pause();
-          return;
+          if (this.loop) {
+            // Hold on the final frame briefly so the result is readable,
+            // then start over.
+            this.index = 0;
+            this._carry = 0;
+          } else {
+            this.pause();
+            return;
+          }
         }
         this.emit();
       }

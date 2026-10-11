@@ -357,6 +357,21 @@ $('btn-back').addEventListener('click', () => player.step(-1));
 $('btn-reset').addEventListener('click', () => player.reset());
 $('btn-end').addEventListener('click', () => player.toEnd());
 
+const loopBtn = $('btn-loop');
+loopBtn.addEventListener('click', () => {
+  player.loop = !player.loop;
+  loopBtn.classList.toggle('on', player.loop);
+  loopBtn.setAttribute('aria-pressed', String(player.loop));
+  try { localStorage.setItem('av2:loop', player.loop ? '1' : ''); } catch {}
+});
+try {
+  if (localStorage.getItem('av2:loop')) {
+    player.loop = true;
+    loopBtn.classList.add('on');
+    loopBtn.setAttribute('aria-pressed', 'true');
+  }
+} catch {}
+
 dom.scrub.addEventListener('input', () => {
   player.pause();
   player.seek(Number(dom.scrub.value));

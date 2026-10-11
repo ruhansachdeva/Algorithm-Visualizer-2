@@ -365,6 +365,11 @@ body.racing .race-foot { display: block; }
 .ctrl:hover:not(:disabled) { background: var(--bg-hover); color: var(--text); }
 .ctrl:disabled { opacity: .3; cursor: default; }
 
+.ctrl.on {
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+  color: var(--text);
+}
+
 .ctrl.play {
   background: var(--accent);
   color: #fff;
