@@ -25,7 +25,8 @@ const PAD = 36;
 export function drawPoints(canvas, frame) {
   const { ctx, w, h } = fitCanvas(canvas);
   const C = colors();
-  const { points, hull = [], closed = false, current = -1, probe = [], dropped = [], pivot = -1 } = frame;
+  const { points, hull = [], closed = false, current = -1, probe = [], dropped = [], pivot = -1,
+          divider = null, band = null } = frame;
   if (!points?.length) return;
 
   const X = (p) => PAD + p.x * (w - PAD * 2);
@@ -34,6 +35,20 @@ export function drawPoints(canvas, frame) {
   const droppedSet = new Set(dropped);
   const probeSet = new Set(probe);
   const hullSet = new Set(hull);
+
+  /* ── the vertical band a divide-and-conquer step is working in ── */
+  if (band) {
+    const x1 = PAD + band[0] * (w - PAD * 2);
+    const x2 = PAD + band[1] * (w - PAD * 2);
+    fillRound(ctx, Math.min(x1, x2), PAD - 10, Math.abs(x2 - x1), h - PAD * 2 + 20, 4, C.range);
+  }
+  if (divider !== null) {
+    const x = PAD + divider * (w - PAD * 2);
+    ctx.save();
+    ctx.setLineDash([5, 4]);
+    line(ctx, x, PAD - 10, x, h - PAD + 10, C.cursor, 1.5);
+    ctx.restore();
+  }
 
   /* ── the shape built so far ── */
   for (let i = 0; i + 1 < hull.length; i++) {

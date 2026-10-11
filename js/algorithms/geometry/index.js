@@ -195,4 +195,111 @@ const jarvis = {
   },
 };
 
-export const GEOMETRY = [graham, jarvis];
+
+/* ──────────────── Closest pair of points ──────────────── */
+
+const closestPair = {
+  ...base,
+  id: 'geo-closest-pair',
+  name: 'Closest Pair of Points',
+  legend: [
+    ['--c-compare', 'pair being measured'],
+    ['--c-path',    'closest found so far'],
+    ['--c-range',   'the strip worth re-checking'],
+    ['--c-cursor',  'the dividing line'],
+  ],
+  about: 'Which two of these points are nearest each other? Checking every pair is n²/2 measurements. Instead: split the cloud down the middle, solve each half, and take the better of the two. The catch is a pair straddling the line — but only points within that best distance of the line can matter, and inside that strip each point can only be beaten by a handful of others. That bound is what keeps the merge linear and the whole thing O(n log n).',
+  cost: { best: 'O(n log n)', avg: 'O(n log n)', worst: 'O(n log n)', space: 'O(n)', stable: '—' },
+  pseudocode: [
+    'sort the points left to right',
+    'split down the middle and solve each half',
+    'let d be the better of the two answers',
+    'look only at points within d of the dividing line',
+    '  sorted by height, each needs comparing to just a few neighbours',
+    'the answer is the best of left, right, and the strip',
+  ],
+  *run({ points }) {
+    const pts = points;
+    const n = pts.length;
+    if (n < 2) { yield { points: pts, note: 'need at least two points', stats: { points: n } }; return; }
+
+    const dist = (a, b) => Math.hypot(pts[a].x - pts[b].x, pts[a].y - pts[b].y);
+    const order = pts.map((_, i) => i).sort((a, b) => pts[a].x - pts[b].x);
+
+    let best = Infinity, bestPair = [order[0], order[1]];
+    let measured = 0, stripChecks = 0, splits = 0;
+
+    const f = (extra) => ({
+      points: pts,
+      hull: Number.isFinite(best) ? bestPair : [],
+      stats: {
+        points: n,
+        measurements: measured,
+        'if we compared every pair': (n * (n - 1)) / 2,
+        'closest so far': Number.isFinite(best) ? best.toFixed(3) : '—',
+      },
+      ...extra,
+    });
+
+    yield f({ line: 0, note: `${n} points sorted left to right — comparing every pair would take ${(n * (n - 1)) / 2} measurements` });
+
+    function* solve(lo, hi, depth) {
+      const span = [pts[order[lo]].x, pts[order[hi]].x];
+
+      // Small enough to just measure everything.
+      if (hi - lo <= 2) {
+        for (let i = lo; i <= hi; i++) {
+          for (let j = i + 1; j <= hi; j++) {
+            measured++;
+            const d = dist(order[i], order[j]);
+            yield f({ band: span, probe: [order[i], order[j]], line: 1, note: `small group — measuring directly: ${d.toFixed(3)}` });
+            if (d < best) { best = d; bestPair = [order[i], order[j]]; }
+          }
+        }
+        return;
+      }
+
+      const mid = (lo + hi) >> 1;
+      const midX = pts[order[mid]].x;
+      splits++;
+
+      yield f({ band: span, divider: midX, line: 1, note: `split these ${hi - lo + 1} points down the middle` });
+
+      yield* solve(lo, mid, depth + 1);
+      yield* solve(mid + 1, hi, depth + 1);
+
+      // Only points within `best` of the line can beat what we already have.
+      const strip = [];
+      for (let i = lo; i <= hi; i++) if (Math.abs(pts[order[i]].x - midX) < best) strip.push(order[i]);
+      strip.sort((a, b) => pts[a].y - pts[b].y);
+
+      yield f({
+        band: [midX - best, midX + best], divider: midX, line: 3,
+        note: `${strip.length} point(s) sit within ${best.toFixed(3)} of the line — only these can straddle it and still win`,
+      });
+
+      for (let i = 0; i < strip.length; i++) {
+        // Sorted by height, nothing more than `best` above can matter.
+        for (let j = i + 1; j < strip.length && pts[strip[j]].y - pts[strip[i]].y < best; j++) {
+          measured++; stripChecks++;
+          const d = dist(strip[i], strip[j]);
+          yield f({
+            band: [midX - best, midX + best], divider: midX, probe: [strip[i], strip[j]], line: 4,
+            note: `across the line: ${d.toFixed(3)}${d < best ? ' — closer!' : ''}`,
+          });
+          if (d < best) { best = d; bestPair = [strip[i], strip[j]]; }
+        }
+      }
+    }
+
+    yield* solve(0, n - 1, 0);
+
+    yield f({
+      line: 5,
+      note: `closest pair is ${best.toFixed(4)} apart — found in ${measured} measurements instead of ${(n * (n - 1)) / 2}, with ${stripChecks} of those across a dividing line`,
+      stats: { points: n, measurements: measured, 'if we compared every pair': (n * (n - 1)) / 2, 'closest distance': best.toFixed(4) },
+    });
+  },
+};
+
+export const GEOMETRY = [graham, jarvis, closestPair];
