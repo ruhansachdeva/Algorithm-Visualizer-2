@@ -279,6 +279,12 @@ body {
 }
 
 /* One pane normally; two side by side when racing. */
+
+/* This has to come first: `display: flex` below would otherwise beat the
+   browser's own `[hidden] { display: none }`, leaving the second pane
+   visible as an empty box whenever racing is off. */
+.race-pane[hidden] { display: none; }
+
 .race-pane {
   flex: 1;
   min-width: 0;
