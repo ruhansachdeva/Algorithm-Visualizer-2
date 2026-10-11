@@ -211,7 +211,9 @@ function select(id) {
   // Grids are sized to the stage, so shape them before the first run.
   if (algo.view === 'grid') fitGridRows(dom.canvas);
 
-  readInput = buildInputs(algo, dom.inputs, rerun);
+  // Typing in a text input re-runs on every keystroke; keeping the playhead
+  // stops the view snapping back to step 1 between characters.
+  readInput = buildInputs(algo, dom.inputs, () => rerun(true));
   rerun();
 
   // remember the choice across reloads
