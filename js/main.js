@@ -44,6 +44,7 @@ const dom = {
 
 let current = null;        // the selected algorithm
 let rival = null;          // the algorithm it is racing against, if any
+let raceInfo = null;       // how each side of the current race went
 let readInput = () => ({});
 let pendingStep = null;    // step requested by the URL, applied after recording
 let pendingRival = null;   // opponent named in the URL
@@ -110,8 +111,8 @@ function paint(frame) {
   if (frame._race) {
     draw(dom.canvas, frame.a, current);
     draw(dom.canvasB, frame.b, rival);
-    writeRaceSide(dom.headA, dom.footA, current, frame.a, frame.doneA);
-    writeRaceSide(dom.headB, dom.footB, rival, frame.b, frame.doneB);
+    writeRaceSide(dom.headA, dom.footA, current, frame.a, frame.doneA, raceInfo?.aSteps ?? 0);
+    writeRaceSide(dom.headB, dom.footB, rival, frame.b, frame.doneB, raceInfo?.bSteps ?? 0);
   } else {
     draw(dom.canvas, frame, current);
   }
@@ -131,13 +132,15 @@ function paintError(message) {
 }
 
 /** The name, finish marker, caption and counters for one side of a race. */
-function writeRaceSide(head, foot, algo, frame, done) {
+function writeRaceSide(head, foot, algo, frame, done, steps) {
+  const mark = document.createElement('span');
+  if (done) {
+    mark.className = 'finished';
+    mark.textContent = `finished in ${steps.toLocaleString()} steps`;
+  }
   head.replaceChildren(
     Object.assign(document.createElement('span'), { textContent: algo.name }),
-    Object.assign(document.createElement('span'), {
-      className: done ? 'finished' : '',
-      textContent: done ? 'finished' : '',
-    }),
+    mark,
   );
   const note = Object.assign(document.createElement('div'), { textContent: frame.note || '' });
   const counters = Object.assign(document.createElement('div'), {
@@ -388,6 +391,15 @@ function rerun(preserveStep = false) {
  */
 function buildRace(a, b) {
   const n = Math.max(a.length, b.length);
+  // Remember how long each side took, and what it finished holding, so the
+  // result can be summarised without re-walking the frames.
+  raceInfo = {
+    aSteps: a.length,
+    bSteps: b.length,
+    aFinal: a[a.length - 1],
+    bFinal: b[b.length - 1],
+  };
+
   const out = new Array(n);
   for (let i = 0; i < n; i++) {
     out[i] = {
