@@ -30,6 +30,7 @@ export const state = {
     items: [{ v: 60, w: 5 }, { v: 100, w: 4 }, { v: 120, w: 6 }, { v: 40, w: 3 }],
     dims: [30, 35, 15, 5, 10, 20, 25],
     signed: [-2, 1, -3, 4, -1, 2, 1, -5, 4],
+    prices: [1, 5, 8, 9, 10, 17, 17, 20],
     capacity: 10,
   },
   grid:   {
@@ -584,6 +585,29 @@ const builders = {
       button('ALGORITHM / LOGARITHM', () => { d.a = 'ALGORITHM'; d.b = 'LOGARITHM'; rebuild(box, algo, rerun); }),
     );
     return () => ({ a: d.a || 'A', b: d.b || 'B' });
+  },
+
+  'dp-rod'(box, algo, rerun) {
+    const d = state.dp;
+    const f = field('piece prices');
+    const input = el('input');
+    input.type = 'text';
+    input.style.width = '220px';
+    input.value = d.prices.join(', ');
+    input.addEventListener('input', () => {
+      const parsed = input.value.split(/[^0-9]+/).map(Number).filter((x) => x >= 0);
+      if (parsed.length) { d.prices = parsed.slice(0, 10); rerun(); }
+    });
+    f.append(input);
+    box.append(
+      f,
+      button('textbook prices', () => { d.prices = [1, 5, 8, 9, 10, 17, 17, 20]; rebuild(box, algo, rerun); }),
+      button('whole rod wins', () => { d.prices = [1, 2, 3, 4, 50]; rebuild(box, algo, rerun); }),
+    );
+    const hint = el('span', 'field', 'the nth number is what a piece of length n sells for');
+    hint.style.opacity = '.7';
+    box.append(hint);
+    return () => ({ prices: d.prices });
   },
 
   'dp-signed'(box, algo, rerun) {

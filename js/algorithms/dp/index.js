@@ -658,4 +658,73 @@ const kadane = {
 
 const rangeOf = (a, b) => Array.from({ length: b - a + 1 }, (_, k) => a + k);
 
-export const DP = [fib, kadane, lis, coinChange, subsetSum, knapsack, lcs, editDistance, matrixChain];
+
+/* ───────────────────────── Rod Cutting ─────────────────── */
+
+const rodCutting = {
+  ...base,
+  id: 'dp-rod-cutting',
+  name: 'Rod Cutting',
+  input: 'dp-rod',
+  about: 'A rod of length n, and a price for each possible piece length. Cut it to maximise what you can sell. The surprise is that the most valuable piece is often the wrong first cut — the best plan may use several cheap pieces instead. Each cell asks only "what is the best first cut?", because whatever is left is a smaller rod already solved.',
+  cost: { best: 'O(n²)', avg: 'O(n²)', worst: 'O(n²)', space: 'O(n)', stable: '—' },
+  pseudocode: [
+    'best[0] = 0 — a rod of length zero is worth nothing',
+    'for each length L from 1 upward:',
+    '  try every first cut of size c from 1 to L',
+    '  value = price[c] + best[L - c]',
+    '  keep the largest',
+  ],
+  *run({ prices }) {
+    const n = prices.length;
+    const best = grid(1, n + 1);
+    const firstCut = new Array(n + 1).fill(0);
+    best[0][0] = 0;
+
+    const f = (extra) => ({
+      table: copy(best),
+      rowLabels: ['best £'],
+      colLabels: Array.from({ length: n + 1 }, (_, i) => i),
+      colTitle: `rod length  (a piece of length i sells for ${prices.map((p, i) => `${i + 1}:${p}`).join('  ')})`,
+      ...extra,
+    });
+
+    let tried = 0;
+    yield f({ current: [0, 0], line: 0, note: 'a rod of length 0 is worth nothing', stats: { 'cuts tried': 0 } });
+
+    for (let L = 1; L <= n; L++) {
+      let bestVal = -Infinity, bestCut = 0;
+
+      for (let c = 1; c <= L; c++) {
+        tried++;
+        const value = prices[c - 1] + best[0][L - c];
+        yield f({
+          current: [0, L], deps: [[0, L - c]], line: 3,
+          note: `length ${L}: cut off ${c} (sells for ${prices[c - 1]}), leaving ${L - c} worth ${best[0][L - c]} → ${value}`,
+          stats: { 'cuts tried': tried },
+        });
+        if (value > bestVal) { bestVal = value; bestCut = c; }
+      }
+
+      best[0][L] = bestVal;
+      firstCut[L] = bestCut;
+      yield f({ current: [0, L], line: 4, note: `best for length ${L} is ${bestVal}, cutting ${bestCut} first`, stats: { 'cuts tried': tried } });
+    }
+
+    const pieces = [];
+    let left = n;
+    const path = [];
+    while (left > 0) { path.push([0, left]); pieces.push(firstCut[left]); left -= firstCut[left]; }
+    path.push([0, 0]);
+
+    const whole = prices[n - 1];
+    yield f({
+      path, line: 4,
+      note: `best is ${best[0][n]} by cutting ${pieces.join(' + ')}` +
+        (best[0][n] > whole ? ` — better than selling it whole for ${whole}` : ` — the same as selling it whole`),
+      stats: { 'cuts tried': tried, 'best value': best[0][n], 'sell whole': whole },
+    });
+  },
+};
+
+export const DP = [fib, kadane, lis, coinChange, subsetSum, knapsack, rodCutting, lcs, editDistance, matrixChain];
