@@ -576,13 +576,22 @@ input[type="range"]::-moz-range-thumb {
 /* ───────────────────────── info panel ───────────────────────── */
 
 .info {
-  background: var(--bg-panel);
+  background: var(--bg);
   border-left: 1px solid var(--border);
   overflow-y: auto;
   padding: 14px;
 }
 
-.info-block { margin-bottom: 20px; }
+/* Each block is its own card, so the panel reads as a set of facts
+   rather than one long column of text. */
+.info > .info-block:not(.pick-block) {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 11px 13px;
+}
+
+.info-block { margin-bottom: 11px; }
 
 /* The recommendation sits in a tinted card so it reads as an opinion,
    not as more neutral reference text. */
@@ -599,7 +608,7 @@ input[type="range"]::-moz-range-thumb {
 .pick-star { font-size: 11px; }
 
 .info-block h3 {
-  margin: 0 0 7px;
+  margin: 0 0 8px;
   font-size: 10.5px;
   font-weight: 700;
   letter-spacing: 0.09em;
