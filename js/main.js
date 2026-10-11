@@ -156,8 +156,11 @@ function buildSidebar(filterText = '') {
   dom.list.replaceChildren();
 
   for (const cat of CATEGORIES) {
-    const matches = cat.algorithms.filter(
-      (a) => !q || a.name.toLowerCase().includes(q) || cat.name.toLowerCase().includes(q)
+    // Filter the ENRICHED list, not the raw category array — only the
+    // enriched entries carry `pick` and `category`.
+    const matches = ALL.filter(
+      (a) => a.category === cat.id &&
+             (!q || a.name.toLowerCase().includes(q) || cat.name.toLowerCase().includes(q))
     );
     if (!matches.length) continue;
 
