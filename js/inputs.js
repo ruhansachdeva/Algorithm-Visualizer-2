@@ -16,6 +16,7 @@ export const state = {
   kth:    { size: 24, k: 11, data: null },
   graph:  { size: 9, extra: 0.35, negativeCycle: false, cache: null, key: '' },
   tree:   { size: 10, sorted: false, values: null, target: null },
+  segment:{ size: 8, values: null, from: 2, to: 5 },
   string: { text: 'ABACADABRABRACADABRA', pattern: 'ABRA' },
   words:  { list: 'CAT, CAR, CARD, CARE, DOG, DO, DONE', target: 'CARD' },
   huffman:{ text: 'ABRACADABRA' },
@@ -884,6 +885,37 @@ const builders = {
     hint.style.opacity = '.7';
     box.append(hint);
     return () => ({ items: d.items, capacity: d.capacity });
+  },
+
+  /* ── a list plus a range to total ── */
+  segment(box, algo, rerun) {
+    const s = state.segment;
+    const wantsRange = algo.id === 'segtree-query';
+    const regen = () => { s.values = Array.from({ length: s.size }, () => 1 + Math.floor(Math.random() * 20)); };
+    if (!s.values || s.values.length !== s.size) regen();
+
+    box.append(
+      slider('values', { min: 1, max: 16, value: s.size }, (v) => {
+        s.size = v;
+        s.from = Math.min(s.from, v - 1);
+        s.to = Math.min(s.to, v - 1);
+        regen();
+        rebuild(box, algo, rerun);
+      }),
+      button('new values', () => { regen(); rerun(); }),
+    );
+
+    if (wantsRange) {
+      box.append(
+        slider('from', { min: 0, max: s.size - 1, value: Math.min(s.from, s.size - 1) }, (v) => { s.from = v; rerun(); }),
+        slider('to', { min: 0, max: s.size - 1, value: Math.min(s.to, s.size - 1) }, (v) => { s.to = v; rerun(); }),
+      );
+      const hint = el('span', 'field', 'ask for the whole list and one node answers it; ask for an awkward range and watch it split');
+      hint.style.opacity = '.7';
+      box.append(hint);
+    }
+
+    return () => ({ values: s.values, from: s.from, to: s.to });
   },
 
   /* ── a list of values to build a tree from ── */
