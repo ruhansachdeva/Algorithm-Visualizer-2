@@ -506,6 +506,20 @@ window.addEventListener('keydown', (e) => {
   }
   if (!help.hidden) return;   // the overlay swallows playback keys
 
+  // Up/down move through the sidebar list, wrapping at the ends.
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+    e.preventDefault();
+    const ids = [...dom.list.querySelectorAll('.algo-btn')].map((b) => b.dataset.id);
+    if (!ids.length) return;
+    const at = ids.indexOf(current?.id);
+    const next = e.key === 'ArrowDown'
+      ? ids[(at + 1 + ids.length) % ids.length]
+      : ids[(at - 1 + ids.length) % ids.length];
+    select(next);
+    dom.list.querySelector(`.algo-btn.active`)?.scrollIntoView({ block: 'nearest' });
+    return;
+  }
+
   switch (e.key) {
     case ' ':          e.preventDefault(); player.toggle(); break;
     case 'ArrowRight': e.preventDefault(); player.step(e.shiftKey ? 25 : 1); break;
