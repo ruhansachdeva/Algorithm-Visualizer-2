@@ -17,6 +17,7 @@ export const state = {
   tree:   { size: 10, sorted: false, values: null, target: null },
   string: { text: 'ABACADABRABRACADABRA', pattern: 'ABRA' },
   words:  { list: 'CAT, CAR, CARD, CARE, DOG, DO, DONE', target: 'CARD' },
+  huffman:{ text: 'ABRACADABRA' },
   queens: { n: 8, findAll: false },
   sudoku: { which: 'easy' },
   hanoi:  { n: 4 },
@@ -404,6 +405,29 @@ const builders = {
       box.append(hint);
     }
     return () => ({ array: s.data, target: s.target });
+  },
+
+  /* ── a short text to compress ── */
+  huffman(box, algo, rerun) {
+    const s = state.huffman;
+    const f = field('text');
+    const input = el('input');
+    input.type = 'text';
+    input.style.width = '280px';
+    input.value = s.text;
+    input.addEventListener('input', () => { s.text = input.value.slice(0, 60); input.value = s.text; rerun(); });
+    f.append(input);
+
+    box.append(
+      f,
+      button('ABRACADABRA', () => { s.text = 'ABRACADABRA'; rebuild(box, algo, rerun); }),
+      button('lopsided', () => { s.text = 'AAAAAAAAAAAAAAAABBBBCCDE'; rebuild(box, algo, rerun); }),
+      button('all equal', () => { s.text = 'ABCDEFGH'; rebuild(box, algo, rerun); }),
+    );
+    const hint = el('span', 'field', 'lopsided letter counts compress well; equal counts barely compress at all');
+    hint.style.opacity = '.7';
+    box.append(hint);
+    return () => ({ text: s.text });
   },
 
   /* ── a list of words, for tries ── */

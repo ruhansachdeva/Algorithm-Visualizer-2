@@ -11,6 +11,7 @@
 import { T, TREE_LEGEND } from '../../views/tree-view.js';
 import { TRIES } from './trie.js';
 import { REDBLACK } from './redblack.js';
+import { HUFFMAN } from './huffman.js';
 
 const base = { view: 'tree', input: 'tree', legend: TREE_LEGEND };
 
@@ -587,4 +588,4 @@ const heap = {
   },
 };
 
-export const TREES = [insert, search, remove, inorder, preorder, postorder, levelorder, avl, ...REDBLACK, heap, ...TRIES];
+export const TREES = [insert, search, remove, inorder, preorder, postorder, levelorder, avl, ...REDBLACK, heap, ...TRIES, ...HUFFMAN];

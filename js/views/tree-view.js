@@ -74,7 +74,7 @@ function layoutTree(nodes, root, binary) {
 export function drawTree(canvas, frame) {
   const { ctx, w, h } = fitCanvas(canvas);
   const C = colors();
-  const { nodes, root, states, paint, binary = true } = frame;
+  const { nodes, root, states, paint, binary = true, hideRoot = false } = frame;
 
   if (root === null || root === undefined || !nodes?.length) {
     label(ctx, frame.emptyText || 'the tree is empty', w / 2, h / 2, { size: 13, color: C.faint, mono: false });
@@ -106,6 +106,9 @@ export function drawTree(canvas, frame) {
 
   /* ── edges ── */
   for (const [i] of pos) {
+    // A forest is drawn under one invisible stand-in root, which holds the
+    // separate trees apart. Its spokes would be meaningless, so skip them.
+    if (hideRoot && i === root) continue;
     for (const k of nodes[i].children || []) {
       if (k === null || k === undefined || !pos.has(k)) continue;
       const st = states ? states[k] : T.IDLE;
@@ -116,6 +119,7 @@ export function drawTree(canvas, frame) {
 
   /* ── nodes ── */
   for (const [i] of pos) {
+    if (hideRoot && i === root) continue;
     const st = states ? states[i] : T.IDLE;
     const x = X(i), y = Y(i);
 
