@@ -9,6 +9,8 @@
    between checking everything and halving the problem.
    ============================================================ */
 
+import { SORTING } from '../sorting/index.js';
+
 const base = { view: 'array', input: 'search' };
 
 /** One search frame. */
@@ -21,6 +23,93 @@ function outside(n, lo, hi) {
   const dead = [];
   for (let i = 0; i < n; i++) if (i < lo || i > hi) dead.push(i);
   return dead;
+}
+
+
+/* ══════════════ the cost a sorted search hides ═══════════════
+
+   Binary search is O(log n) — but only on a list that is already
+   sorted, and the cost table never says who sorted it.
+
+   Given an unsorted list these algorithms cannot start at all. So
+   rather than quietly sorting behind the scenes, the sort runs on
+   screen and its comparisons are added to the total. For a SINGLE
+   lookup that reverses the usual conclusion completely: a linear
+   scan wins easily, because it does not need the list sorted.
+
+   Sorting only pays off once you search the same list many times.
+   That is the real reason sorted structures exist, and it is
+   invisible if the sort is treated as free.
+   ═══════════════════════════════════════════════════════════ */
+
+/** Run Timsort on screen, returning the sorted list and what it cost. */
+function* sortFirst(arr, target) {
+  const timsort = SORTING.find((a) => a.id === 'timsort');
+  let final = null;
+  for (const f of timsort.run({ array: arr })) {
+    final = f;
+    yield { ...f, target, phase: 'sorting', note: `sorting first — ${f.note}` };
+  }
+  return {
+    array: final ? final.array : arr,
+    comparisons: final?.stats?.comparisons ?? 0,
+  };
+}
+
+/** What a plain scan of the ORIGINAL, unsorted list would have cost. */
+const linearCost = (arr, target) => {
+  const at = arr.indexOf(target);
+  return at === -1 ? arr.length : at + 1;
+};
+
+/** However this particular algorithm counts its own work. */
+const searchEffort = (stats = {}) =>
+  stats.steps ?? stats.probes ?? stats.rounds ?? stats.hops ?? stats.comparisons ?? 0;
+
+/**
+ * Wrap a search that needs sorted input so that, when handed an unsorted
+ * list, it sorts first — visibly, and on the bill.
+ */
+function sortsFirst(algo) {
+  const inner = algo.run;
+  return {
+    ...algo,
+    *run(input) {
+      if (input.presorted !== false) { yield* inner.call(this, input); return; }
+
+      const original = input.array.slice();
+      const prep = yield* sortFirst(original.slice(), input.target);
+
+      let last = null;
+      for (const f of inner.call(this, { ...input, array: prep.array })) {
+        last = f;
+        yield f;
+      }
+
+      const own = searchEffort(last?.stats);
+      const total = prep.comparisons + own;
+      const linear = linearCost(original, input.target);
+      const payback = Math.max(1, Math.ceil(prep.comparisons / Math.max(1, linear - own)));
+
+      yield {
+        ...last,
+        phase: 'verdict',
+        stats: {
+          ...(last?.stats ?? {}),
+          'sorting cost': prep.comparisons,
+          'search cost': own,
+          'TOTAL': total,
+          'a linear scan': linear,
+        },
+        note: `${own} step${own === 1 ? '' : 's'} to search — but sorting the list first took ` +
+          `${prep.comparisons.toLocaleString()} comparisons, so the honest total is ${total.toLocaleString()}. ` +
+          (linear < total
+            ? `A linear scan of the unsorted list would have taken ${linear}. For a single lookup it wins outright — ` +
+              `sorting only pays off from about the ${payback}${payback === 1 ? 'st' : payback === 2 ? 'nd' : payback === 3 ? 'rd' : 'th'} search onwards.`
+            : `A linear scan would have taken ${linear}, so sorting already paid for itself here.`),
+      };
+    },
+  };
 }
 
 /* ───────────────────────── Linear ──────────────────────── */
@@ -471,4 +560,13 @@ const ordinal = (k) => {
   return k + (s[(v - 20) % 10] || s[v] || s[0]);
 };
 
-export const SEARCHING = [linear, binary, quickselect, jump, exponential, interpolation, ternary, fibonacci];
+/* Wrapping reorders the list, so put it back the way it reads best. */
+const ORDER = ['linear', 'binary', 'quickselect', 'jump', 'exponential', 'interpolation', 'ternary', 'fib-search'];
+
+// Linear search is deliberately NOT wrapped: not needing a sorted list is
+// precisely its advantage, and sorting here would erase the comparison.
+export const SEARCHING = [
+  linear,
+  quickselect,
+  ...[binary, jump, exponential, interpolation, ternary, fibonacci].map(sortsFirst),
+].sort((a, b) => ORDER.indexOf(a.id) - ORDER.indexOf(b.id));
