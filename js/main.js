@@ -218,11 +218,17 @@ function buildSidebar(filterText = '') {
   }
 }
 
-/** Categories the user has folded away. */
-const collapsed = new Set();
+/** Categories the user has folded away, remembered between visits. */
+const collapsed = new Set(readCollapsed());
+
+function readCollapsed() {
+  try { return JSON.parse(localStorage.getItem('av2:collapsed') || '[]'); }
+  catch { return []; }
+}
 
 function toggleCategory(id) {
   if (collapsed.has(id)) collapsed.delete(id); else collapsed.add(id);
+  try { localStorage.setItem('av2:collapsed', JSON.stringify([...collapsed])); } catch {}
   applyCollapsed();
 }
 
