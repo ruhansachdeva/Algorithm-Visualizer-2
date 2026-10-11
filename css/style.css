@@ -816,11 +816,81 @@ input[type="range"]::-moz-range-thumb {
 }
 
 @media (max-width: 760px) {
-  body { overflow: auto; }
-  .layout { grid-template-columns: 1fr; }
-  .sidebar { border-right: none; border-bottom: 1px solid var(--border); max-height: 220px; }
-  .stage-wrap { height: 70vh; }
+  /* ── Phones ──────────────────────────────────────────────
+     Two problems at this width. Content ran off the right edge,
+     because several controls carry fixed pixel widths that do not
+     fit 390px. And the algorithm list sat ABOVE the visualization
+     in a 220px window, so you scrolled past four algorithm names
+     before reaching the thing you opened the page for.
+
+     So: the stage goes first, the list goes underneath at full
+     height, and everything is allowed to shrink.               */
+
+  /* The desktop layout pins everything inside one viewport height and
+     scrolls the panes individually. On a phone the page itself has to
+     scroll instead, or the stage and the controls get crushed to nothing
+     to make room for the algorithm list. */
+  html, body { height: auto; min-height: 100%; }
+  body { overflow-y: auto; overflow-x: hidden; }
+
+  .layout {
+    display: flex;
+    flex-direction: column;
+    flex: none;
+    min-height: 0;
+  }
+
+  .stage-wrap { order: 1; height: auto; padding: 10px 10px 12px; gap: 8px; }
+  .sidebar    { order: 2; max-height: none; border-right: none; border-top: 1px solid var(--border); }
+  .info       { display: none; }
+
+  /* Worth real height, and racing side by side is hopeless here. */
+  .stage { min-height: 46vh; flex-direction: column; }
+
+  .topbar { height: 50px; padding: 0 12px; }
+  .tagline { display: none; }
+  .logo { width: 22px; height: 22px; }
+  .algo-count { display: none; }
   .legend { display: none; }
+  .crumb-blurb { display: none; }
+
+  /* Nothing may be wider than the screen. Each of these carries a fixed
+     pixel width on desktop that does not fit 390px, and a flex row will
+     happily overflow rather than wrap unless its children are allowed to
+     shrink below their content size — hence min-width: 0 throughout. */
+  .stage-wrap,
+  .sidebar { min-width: 0; max-width: 100%; }
+
+  .controls { flex-wrap: wrap; gap: 8px 10px; padding: 8px 10px; }
+  .controls > * { min-width: 0; max-width: 100%; }
+  .controls-main { flex: 1 1 100%; justify-content: space-between; }
+  .scrub-wrap { order: 3; flex: 1 1 100%; }
+  .speed { order: 4; flex: 1 1 100%; }
+  .speed input { flex: 1; width: auto; min-width: 0; }
+  .race-picker { order: 5; flex: 1 1 100%; }
+  .race-picker select { flex: 1; min-width: 0; max-width: none; }
+
+  .inputs { gap: 7px 10px; }
+  .inputs > * { max-width: 100%; min-width: 0; }
+  .inputs .field { flex: 0 1 auto; }
+  .field input[type="text"] { width: auto; max-width: 160px; min-width: 0; }
+  .field input[type="range"] { width: 78px; }
+  .field select { max-width: 140px; }
+
+  /* Three columns do not fit; put the label on its own line. */
+  .rr-grid { grid-template-columns: 1fr 1fr; gap: 3px 10px; }
+  .rr-label { grid-column: 1 / -1; padding-top: 6px; }
+  .rr-num { min-width: 44px; font-size: 11px; }
+
+  .help-card { padding: 18px; }
+}
+
+@media (max-width: 420px) {
+  /* Narrowest phones: trim the last few pixels. */
+  .brand h1 { font-size: 13px; }
+  .stage-head h2 { font-size: 15px; }
+  .big-o { font-size: 10.5px; margin-left: 6px; }
+  .ctrl { width: 30px; height: 30px; }
 }
 
 /* ───────────────────── help overlay ────────────────────── */
