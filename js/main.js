@@ -143,9 +143,13 @@ function buildSidebar(filterText = '') {
     );
     if (!matches.length) continue;
 
-    dom.list.append(Object.assign(document.createElement('div'), {
-      className: 'cat-head', textContent: cat.name,
-    }));
+    const head = document.createElement('div');
+    head.className = 'cat-head';
+    head.append(
+      Object.assign(document.createElement('span'), { textContent: cat.name }),
+      Object.assign(document.createElement('span'), { className: 'cat-count', textContent: matches.length }),
+    );
+    dom.list.append(head);
 
     for (const algo of matches) {
       const b = document.createElement('button');
