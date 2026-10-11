@@ -28,9 +28,13 @@ close it when you're done.
 Or do the same thing by hand:
 
 ```sh
-python3 -m http.server 8000
+python3 serve.py 8000
 # then open http://localhost:8000
 ```
+
+`serve.py` is just Python's built-in server with caching turned off. The
+built-in one (`python3 -m http.server`) sends no cache headers, so browsers
+guess — and will happily show you an old copy of a file you just edited.
 
 In VS Code, the **Live Server** extension works too: right-click `index.html`
 → *Open with Live Server*.
@@ -176,6 +180,7 @@ reading an ordinary implementation.
 
 ```
 start.command           double-click to run it
+serve.py                the local server (caching off, so reloads are honest)
 index.html              page shell
 css/style.css           all styling; colors are CSS variables at the top
 js/

@@ -35,7 +35,10 @@ echo "  Leave this window open while you use it."
 echo "  Press Control-C here, or just close this window, to stop."
 echo ""
 
-python3 -m http.server "$PORT" --bind 127.0.0.1 >/dev/null 2>&1 &
+# serve.py rather than `python3 -m http.server`: the built-in one sends no
+# caching headers, so browsers guess — and guess wrong, showing you an old
+# copy of a file you just edited.
+python3 serve.py "$PORT" >/dev/null 2>&1 &
 SERVER=$!
 
 # Stop the server when this window closes or Control-C is pressed.
