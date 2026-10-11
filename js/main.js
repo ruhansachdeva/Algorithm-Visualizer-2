@@ -258,6 +258,9 @@ function rerun(preserveStep = false) {
       stats: { status: 'error' },
     }];
   }
+  // A truncated run looks like a finished one unless we say otherwise.
+  document.body.classList.toggle('truncated', !!frames[frames.length - 1]?._truncated);
+
   renderLegend(legendFor(frames, current));
   const keepAt = preserveStep ? player.index : 0;
   player.load(frames);

@@ -23,7 +23,11 @@ export function record(gen, cap = 60000) {
   while (!result.done) {
     frames.push(result.value);
     if (frames.length >= cap) {
-      frames.push({ ...result.value, note: `stopped early — hit the ${cap.toLocaleString()} step limit` });
+      frames.push({
+        ...result.value,
+        _truncated: true,
+        note: `stopped early at the ${cap.toLocaleString()}-step limit — this run needs more steps than the app will hold in memory`,
+      });
       break;
     }
     result = gen.next();

@@ -701,3 +701,12 @@ input[type="range"]::-moz-range-thumb {
 @media (prefers-reduced-motion: reduce) {
   * { transition-duration: 0.01ms !important; }
 }
+
+/* A run that hit the frame cap did not finish — colour the scrubber so
+   that is obvious, rather than letting it look like a completed run. */
+body.truncated .scrub-label::after {
+  content: '  ·  incomplete';
+  color: var(--c-swap);
+  font-weight: 700;
+}
+body.truncated .note { color: var(--c-swap); }
