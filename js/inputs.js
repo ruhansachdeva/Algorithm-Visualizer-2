@@ -25,6 +25,7 @@ export const state = {
   queens: { n: 8, findAll: false },
   sudoku: { which: 'easy' },
   hanoi:  { n: 4 },
+  enumerate: { n: 4 },
   dp:     {
     n: 14,
     a: 'KITTEN', b: 'SITTING',
@@ -613,6 +614,28 @@ const builders = {
       box.append(button(name, () => { s.which = key; rebuild(box, algo, rerun); }, { active: s.which === key }));
     }
     return () => ({ puzzle: SUDOKU[s.which] });
+  },
+
+  /* ── a small set to enumerate over ── */
+  enumerate(box, algo, rerun) {
+    const s = state.enumerate;
+    // Permutations blow up far faster than subsets, so they get a tighter cap.
+    const max = algo.id === 'bt-permutations' ? 6 : 9;
+    if (s.n > max) s.n = max;
+
+    box.append(
+      slider('items', { min: 1, max, value: s.n }, (v) => { s.n = v; rerun(); }),
+    );
+    const total = algo.id === 'bt-permutations'
+      ? Array.from({ length: s.n }, (_, i) => i + 1).reduce((a, b) => a * b, 1)
+      : 2 ** s.n;
+    const hint = el('span', 'field',
+      `${s.n} items → ${total.toLocaleString()} ${algo.id === 'bt-permutations' ? 'orderings' : 'subsets'}` +
+      (algo.id === 'bt-permutations' ? ' · capped at 6 because 10 items is over three million' : ''));
+    hint.style.opacity = '.7';
+    box.append(hint);
+
+    return () => ({ values: Array.from({ length: s.n }, (_, i) => i + 1) });
   },
 
   /* ── Towers of Hanoi ── */
