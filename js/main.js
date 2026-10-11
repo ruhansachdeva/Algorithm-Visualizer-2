@@ -277,18 +277,20 @@ function toggleCategory(id) {
 }
 
 function applyCollapsed() {
-  // Filtering, or selecting something inside a folded category, has to
-  // open it — otherwise the thing you asked for is invisible.
+  // Filtering opens everything, otherwise a search could return results
+  // you cannot see. The category holding the current algorithm is NOT
+  // forced open — folding it away is a legitimate thing to want, and the
+  // heading gets a dot so you can still find your way back to it.
   const forceOpen = new Set();
   if (dom.filter.value.trim()) {
     for (const head of dom.list.querySelectorAll('.cat-head')) forceOpen.add(head.dataset.cat);
   }
-  if (current?.category) forceOpen.add(current.category);
 
   for (const head of dom.list.querySelectorAll('.cat-head')) {
     const shut = collapsed.has(head.dataset.cat) && !forceOpen.has(head.dataset.cat);
     head.classList.toggle('shut', shut);
     head.setAttribute('aria-expanded', String(!shut));
+    head.classList.toggle('holds-current', shut && head.dataset.cat === current?.category);
   }
   for (const group of dom.list.querySelectorAll('.cat-group')) {
     group.classList.toggle('shut', collapsed.has(group.dataset.cat) && !forceOpen.has(group.dataset.cat));
@@ -307,6 +309,7 @@ function select(id) {
     b.classList.toggle('active', b.dataset.id === id);
   }
 
+  applyCollapsed();   // keeps the "holds the current one" dot in step
   renderCrumb(algo);
   dom.title.textContent = algo.name;
   dom.about.textContent = algo.about || '';
@@ -762,7 +765,9 @@ window.addEventListener('keydown', (e) => {
   // Up/down move through the sidebar list, wrapping at the ends.
   if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
     e.preventDefault();
-    const ids = [...dom.list.querySelectorAll('.algo-btn')].map((b) => b.dataset.id);
+    // Only rows in open categories — stepping into a folded one would move
+    // the selection somewhere you cannot see.
+    const ids = [...dom.list.querySelectorAll('.cat-group:not(.shut) .algo-btn')].map((b) => b.dataset.id);
     if (!ids.length) return;
     const at = ids.indexOf(current?.id);
     const next = e.key === 'ArrowDown'

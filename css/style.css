@@ -236,6 +236,17 @@ body {
 /* A collapsed heading sits tight against the next one. */
 .cat-head.shut { padding-bottom: 6px; }
 
+/* Folded away, but the algorithm you are running lives in here. */
+.cat-head.holds-current .chevron::before {
+  content: '●';
+  position: absolute;
+  margin-left: -11px;
+  font-size: 7px;
+  color: var(--cat, var(--accent));
+}
+.cat-head.holds-current { color: var(--cat, var(--text-faint)); }
+.cat-head.holds-current .cat-name { font-weight: 800; }
+
 .cat-icon {
   display: inline-flex;
   color: var(--cat, var(--text-faint));
