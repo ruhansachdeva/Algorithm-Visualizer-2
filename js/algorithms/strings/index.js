@@ -13,6 +13,7 @@
 
 import { STRING_LEGEND } from '../../views/string-view.js';
 import { PALINDROME } from './palindrome.js';
+import { ZALGO } from './zalgo.js';
 
 const base = { view: 'string', input: 'string', legend: STRING_LEGEND };
 
@@ -295,4 +296,4 @@ const boyerMoore = {
   },
 };
 
-export const STRINGS = [naive, kmp, boyerMoore, rabinKarp, ...PALINDROME];
+export const STRINGS = [naive, kmp, ...ZALGO, boyerMoore, rabinKarp, ...PALINDROME];
