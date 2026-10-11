@@ -25,6 +25,19 @@ import { fitCanvas, colors, fillRound, label, fade, line } from './draw.js';
 
 const PAD = { top: 26, right: 16, bottom: 30, left: 16 };
 
+/* Remembered from the last draw so a mouse position can be turned back
+   into an array index without recomputing the layout. */
+let lastGeometry = null;
+
+/** Which bar is under the pointer? -1 if none. */
+export function barAt(canvas, clientX) {
+  if (!lastGeometry) return -1;
+  const rect = canvas.getBoundingClientRect();
+  const { slot, count } = lastGeometry;
+  const i = Math.floor((clientX - rect.left - PAD.left) / slot);
+  return i >= 0 && i < count ? i : -1;
+}
+
 export function drawArray(canvas, frame) {
   const { ctx, w, h } = fitCanvas(canvas);
   const C = colors();
@@ -45,6 +58,8 @@ export function drawArray(canvas, frame) {
   const slot = plotW / n;
   const gap = Math.min(3, Math.max(0.5, slot * 0.14));
   const barW = Math.max(1, slot - gap);
+
+  lastGeometry = { slot, count: n };
 
   const maxVal = Math.max(1, ...arr.map((v) => Math.abs(v)));
   const hasNegatives = arr.some((v) => v < 0);

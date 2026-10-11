@@ -12,6 +12,7 @@ import { CATEGORIES, VIEWS, HIT_TEST, findAlgo, ALL } from './registry.js';
 import { buildInputs, pointer, fitGridRows } from './inputs.js';
 import { Player, record } from './engine/player.js';
 import { palette, fitCanvas } from './views/draw.js';
+import { barAt } from './views/array-view.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -509,6 +510,18 @@ window.addEventListener('pointerup', canvasPointer('up'));
 dom.canvas.addEventListener('contextmenu', (e) => {
   if (pointer[current?.view]) e.preventDefault();
 });
+
+/* Hovering a bar names its index and value — useful when the array is
+   too dense for the labels to be drawn. */
+dom.canvas.addEventListener('mousemove', (e) => {
+  if (current?.view !== 'array') { dom.canvas.title = ''; return; }
+  const frame = player.frames[player.index];
+  const arr = frame?._race ? frame.a?.array : frame?.array;
+  if (!arr) return;
+  const i = barAt(dom.canvas, e.clientX);
+  dom.canvas.title = i === -1 ? '' : `index ${i} · value ${arr[i]}`;
+});
+dom.canvas.addEventListener('mouseleave', () => { dom.canvas.title = ''; });
 
 /* keyboard: space plays, arrows step, r resets */
 window.addEventListener('keydown', (e) => {
