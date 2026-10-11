@@ -276,3 +276,7 @@ Sudoku takes about 213,000 steps, but its frames are 81 bytes each.
 ## License
 
 MIT — see [LICENSE](LICENSE). Use it, change it, learn from it.
+
+## Ideas
+
+Things worth building but not built — see [IDEAS.md](IDEAS.md).
