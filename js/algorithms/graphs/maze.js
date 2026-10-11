@@ -13,6 +13,8 @@
    watched being carved.
    ============================================================ */
 
+import { random } from '../../rng.js';
+
 import { CELL } from '../../views/grid-view.js';
 
 const base = { view: 'grid', input: 'grid', legend: [
@@ -42,7 +44,7 @@ function commit(cells, inp) {
   cells[inp.goal] = CELL.GOAL;
 }
 
-const pick = (a) => a[Math.floor(Math.random() * a.length)];
+const pick = (a) => a[Math.floor(random() * a.length)];
 
 /* ───────────── Recursive Backtracker (DFS maze) ────────── */
 
@@ -139,7 +141,7 @@ const prim = {
     yield mf(cells, inp, { line: 1, note: 'one cell carved, its walls are candidates', stats: { carved, 'walls waiting': walls.length } });
 
     while (walls.length) {
-      const idx = Math.floor(Math.random() * walls.length);
+      const idx = Math.floor(random() * walls.length);
       const [wx, wy, cx, cy] = walls.splice(idx, 1)[0];
 
       if (cells[at(cx, cy)] !== CELL.WALL) continue;   // already reached another way
@@ -186,7 +188,7 @@ const division = {
 
     function* divide(x, y, w, h) {
       if (w < 3 || h < 3) return;
-      const horizontal = h > w ? true : w > h ? false : Math.random() < 0.5;
+      const horizontal = h > w ? true : w > h ? false : random() < 0.5;
 
       if (horizontal) {
         // wall on an even row, gap on an odd column

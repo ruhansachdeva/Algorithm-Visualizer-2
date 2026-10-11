@@ -8,6 +8,7 @@
    ============================================================ */
 
 import { N, E, GRAPH_LEGEND } from '../../views/graph-view.js';
+import { MAXFLOW } from './maxflow.js';
 import { MinHeap } from './grid.js';
 
 const base = { view: 'graph', input: 'graph' };
@@ -967,4 +968,4 @@ const bridges = {
   },
 };
 
-export const GRAPHS = [bfs, dfs, dijkstra, bellmanFord, floydWarshall, topo, unionFind, kruskal, prim, cycleDetect, bipartite, bridges, tarjan];
+export const GRAPHS = [bfs, dfs, dijkstra, bellmanFord, floydWarshall, topo, unionFind, kruskal, prim, cycleDetect, bipartite, bridges, tarjan, ...MAXFLOW];

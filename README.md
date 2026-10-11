@@ -1,6 +1,6 @@
 # Algorithm Visualizer
 
-A browser-based visualizer for 91 classic algorithms — sorting, searching,
+A browser-based visualizer for 94 classic algorithms — sorting, searching,
 pathfinding, graphs, trees, dynamic programming, string matching, backtracking,
 number theory, geometry and maze generation.
 
@@ -57,9 +57,11 @@ In VS Code, the **Live Server** extension works too: right-click `index.html`
 | `n` | regenerate the input and re-run |
 | `Home` / `End` | first / last step |
 
-You can also drag the scrubber to any point, and the URL carries your place —
-`#quick@120` opens Quick Sort paused at step 120, so a specific moment is
-linkable.
+You can also drag the scrubber to any point, and the URL carries your place.
+`#quick@120~k3f` opens Quick Sort, paused at step 120, **on the same array
+the link's author was looking at** — the trailing seed reproduces the input
+exactly, so a link to a specific moment really does show that moment. The ⧉
+button in the header copies one.
 
 ## Race mode
 
@@ -93,7 +95,7 @@ move the start and goal.
 | Sorting | 20 | bubble, cocktail, selection, insertion, binary insertion, shell, comb, gnome, odd-even, merge, **Timsort**★, **quick**★, quick 3-way, heap, counting, radix, bucket, cycle, pancake, bogo |
 | Searching | 8 | linear, **binary**★, quickselect, jump, exponential, interpolation, ternary, Fibonacci |
 | Pathfinding | 6 | BFS, DFS, Dijkstra, **A\***★, greedy best-first, bidirectional BFS |
-| Graphs | 13 | BFS, DFS, **Dijkstra**★, Bellman-Ford, Floyd-Warshall, topological sort, union-find, Kruskal, Prim, cycle detection, bipartite check, bridges & cut vertices, Tarjan's SCC |
+| Graphs | 14 | BFS, DFS, **Dijkstra**★, Bellman-Ford, Floyd-Warshall, topological sort, union-find, Kruskal, Prim, cycle detection, bipartite check, bridges & cut vertices, Tarjan's SCC, **maximum flow** |
 | Trees | 15 | BST insert/search/delete, in/pre/post/level-order traversal, **AVL**★, **red-black**★, binary heap, **segment tree build/query**, trie insert/search, Huffman coding |
 | Dynamic programming | 10 | Fibonacci, Kadane, LIS, coin change, subset sum, knapsack, rod cutting, **LCS**★, edit distance, matrix chain order |
 | String matching | 6 | naive, **KMP**★, Z-algorithm, **Boyer-Moore**★, Rabin-Karp, longest palindrome |
@@ -128,6 +130,10 @@ split the job between reads and writes.
 - **Convex hull**: switch the points between "clustered" and "near a circle",
   then compare Graham scan against gift wrapping. Gift wrapping costs O(n·h),
   so it wins on the cluster and collapses on the circle.
+- **Maximum Flow** — watch the edge labels turn from `0/5` into `5/5`. When a
+  route runs *backwards* along an edge, the caption says so: that is the
+  algorithm taking back flow an earlier route had committed, and it is the
+  part that makes the whole thing correct.
 - **Closest pair of points** on 60 points: about 11% of the measurements that
   comparing every pair would take.
 - Set the array shape to **already sorted** and run **Timsort**: it finds one

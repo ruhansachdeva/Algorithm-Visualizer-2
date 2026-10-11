@@ -17,6 +17,8 @@
    }
    ============================================================ */
 
+import { random } from '../rng.js';
+
 import { fitCanvas, colors, circle, strokeCircle, label, line, fillRound } from './draw.js';
 
 export const N = { IDLE: 0, FRONTIER: 1, VISITED: 2, CURRENT: 3, DONE: 4, START: 5 };
@@ -33,7 +35,7 @@ const GROUP_COLORS = [
 export function drawGraph(canvas, frame) {
   const { ctx, w, h } = fitCanvas(canvas);
   const C = colors();
-  const { nodes, edges, nodeState, edgeState, nodeLabel, nodeGroup, directed, weighted } = frame;
+  const { nodes, edges, nodeState, edgeState, nodeLabel, nodeGroup, edgeLabel, directed, weighted } = frame;
   if (!nodes?.length) return;
 
   // Positions are computed once, the first time a graph is drawn, and then
@@ -87,10 +89,12 @@ export function drawGraph(canvas, frame) {
       ctx.fill();
     }
 
-    // weight, on a small plate so the line doesn't cut through it
-    if (weighted) {
+    // weight, on a small plate so the line doesn't cut through it.
+    // `edgeLabel` lets an algorithm say something richer than the raw
+    // weight — max flow shows "carried/capacity" rather than just capacity.
+    if (weighted || edgeLabel) {
       const mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
-      const txt = String(e.w);
+      const txt = edgeLabel ? String(edgeLabel[i]) : String(e.w);
       ctx.font = '700 10px ui-monospace, Menlo, monospace';
       const tw = ctx.measureText(txt).width;
       fillRound(ctx, mx - tw / 2 - 4, my - 8, tw + 8, 15, 4, C.panel);
@@ -144,7 +148,7 @@ export function drawGraph(canvas, frame) {
  */
 export function layout(nodes, edges, rounds = 260) {
   for (const n of nodes) {
-    if (n.x === undefined) { n.x = Math.random(); n.y = Math.random(); }
+    if (n.x === undefined) { n.x = random(); n.y = random(); }
   }
   const k = 1.1 / Math.sqrt(nodes.length);
 
@@ -159,7 +163,7 @@ export function layout(nodes, edges, rounds = 260) {
         let dx = nodes[i].x - nodes[j].x;
         let dy = nodes[i].y - nodes[j].y;
         let d2 = dx * dx + dy * dy;
-        if (d2 < 1e-6) { dx = Math.random() * 0.01; dy = Math.random() * 0.01; d2 = 1e-4; }
+        if (d2 < 1e-6) { dx = random() * 0.01; dy = random() * 0.01; d2 = 1e-4; }
         const force = (k * k) / d2;
         fx[i] += dx * force; fy[i] += dy * force;
         fx[j] -= dx * force; fy[j] -= dy * force;

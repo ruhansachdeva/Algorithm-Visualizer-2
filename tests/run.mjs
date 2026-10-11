@@ -10,10 +10,12 @@
 
 const SUITES = [
   './catalogue.test.mjs',
+  './seeding.test.mjs',
   './sorting.test.mjs',
   './searching.test.mjs',
   './pathfinding.test.mjs',
   './graphs.test.mjs',
+  './maxflow.test.mjs',
   './trees.test.mjs',
   './segment.test.mjs',
   './dp.test.mjs',
