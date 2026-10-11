@@ -1,0 +1,15 @@
+# macOS
+.DS_Store
+._*
+
+# editors
+.vscode/
+.idea/
+*.swp
+
+# python bytecode, if you ever add scripts here
+__pycache__/
+*.pyc
+
+# logs and scratch
+*.log
