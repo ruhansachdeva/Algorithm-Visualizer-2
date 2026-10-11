@@ -475,4 +475,118 @@ const subsetSum = {
   },
 };
 
-export const DP = [fib, lis, coinChange, subsetSum, knapsack, lcs, editDistance];
+
+/* ───────────── Matrix Chain Multiplication ─────────────── */
+
+const matrixChain = {
+  ...base,
+  id: 'dp-matrix-chain',
+  name: 'Matrix Chain Order',
+  about: 'Multiplying matrices is associative — (AB)C and A(BC) give the same answer — but they cost wildly different amounts of arithmetic. This finds the cheapest bracketing. It is an INTERVAL dp, so unlike every other table here it fills diagonally: all the two-matrix chains first, then all the three-matrix chains, because a long chain is built from shorter ones that must already be solved.',
+  cost: { best: 'O(n³)', avg: 'O(n³)', worst: 'O(n³)', space: 'O(n²)', stable: '—' },
+  input: 'dp-matrix',
+  pseudocode: [
+    'cost[i][i] = 0 — one matrix needs no multiplying',
+    'for chain lengths 2, 3, 4 … (this is why it fills diagonally):',
+    '  for every chain of that length:',
+    '    try every place k to split it in two',
+    '    cost = left half + right half + the cost of joining them',
+    '    keep the cheapest split',
+  ],
+  *run({ dims }) {
+    // Matrix i has dimensions dims[i] x dims[i+1].
+    const n = dims.length - 1;
+    if (n < 1) {
+      yield { table: [[0]], rowLabels: [''], colLabels: [''], note: 'need at least two dimensions' };
+      return;
+    }
+
+    const cost = grid(n, n);
+    const split = grid(n, n);
+    for (let i = 0; i < n; i++) cost[i][i] = 0;
+
+    const names = Array.from({ length: n }, (_, i) => `A${i + 1}`);
+    const sizes = Array.from({ length: n }, (_, i) => `${dims[i]}x${dims[i + 1]}`);
+
+    let tried = 0;
+    const f = (extra) => ({
+      table: copy(cost),
+      rowLabels: names, colLabels: names,
+      rowTitle: 'chain starts at', colTitle: 'chain ends at',
+      stats: { 'splits tried': tried, ...extra._stats },
+      ...extra,
+    });
+
+    yield f({
+      line: 0,
+      note: `${n} matrices: ${sizes.join(' · ')} — the diagonal is zero because one matrix needs no work`,
+      _stats: {},
+    });
+
+    // length = how many matrices are in the chain being solved
+    for (let len = 2; len <= n; len++) {
+      yield f({ line: 1, note: `now solving every chain of ${len} matrices — one diagonal up`, _stats: {} });
+
+      for (let i = 0; i + len - 1 < n; i++) {
+        const j = i + len - 1;
+        let best = Infinity, bestK = -1;
+
+        for (let k = i; k < j; k++) {
+          tried++;
+          // joining an (i..k) result with a (k+1..j) result costs this many
+          // scalar multiplications, on top of making each half
+          const join = dims[i] * dims[k + 1] * dims[j + 1];
+          const total = cost[i][k] + cost[k + 1][j] + join;
+
+          yield f({
+            current: [i, j], deps: [[i, k], [k + 1, j]], line: 3,
+            note: `(${names.slice(i, k + 1).join('')})(${names.slice(k + 1, j + 1).join('')}) = ${cost[i][k]} + ${cost[k + 1][j]} + ${dims[i]}·${dims[k + 1]}·${dims[j + 1]} = ${total}`,
+            _stats: {},
+          });
+
+          if (total < best) { best = total; bestK = k; }
+        }
+
+        cost[i][j] = best;
+        split[i][j] = bestK;
+        yield f({
+          current: [i, j], line: 5,
+          note: `cheapest way to do ${names[i]}…${names[j]} is ${best}, splitting after ${names[bestK]}`,
+          _stats: {},
+        });
+      }
+    }
+
+    /* ── read the bracketing back out of the split table ── */
+    const bracket = (i, j) => {
+      if (i === j) return names[i];
+      const k = split[i][j];
+      return `(${bracket(i, k)}${bracket(k + 1, j)})`;
+    };
+
+    // What plain left-to-right bracketing would have cost, for contrast.
+    // Each step multiplies the running result (always dims[0] rows) by the
+    // next matrix.
+    let naive = 0;
+    for (let i = 1; i <= n - 1; i++) naive += dims[0] * dims[i] * dims[i + 1];
+
+    const path = [];
+    (function mark(i, j) {
+      path.push([i, j]);
+      if (i === j) return;
+      const k = split[i][j];
+      mark(i, k);
+      mark(k + 1, j);
+    })(0, n - 1);
+
+    yield f({
+      path, line: 5,
+      note: n === 1
+        ? `one matrix — nothing to multiply`
+        : `cheapest order is ${bracket(0, n - 1)} at ${cost[0][n - 1].toLocaleString()} multiplications (left-to-right would cost ${naive.toLocaleString()})`,
+      _stats: { 'best cost': cost[0][n - 1], 'left-to-right': naive },
+    });
+  },
+};
+
+export const DP = [fib, lis, coinChange, subsetSum, knapsack, lcs, editDistance, matrixChain];

@@ -28,6 +28,7 @@ export const state = {
     coins: [1, 3, 4], amount: 11,
     numbers: [3, 34, 4, 12, 5, 2], target: 9,
     items: [{ v: 60, w: 5 }, { v: 100, w: 4 }, { v: 120, w: 6 }, { v: 40, w: 3 }],
+    dims: [30, 35, 15, 5, 10, 20, 25],
     capacity: 10,
   },
   grid:   {
@@ -636,6 +637,41 @@ const builders = {
       }),
     );
     return () => ({ numbers: d.numbers, target: d.target });
+  },
+
+  'dp-matrix'(box, algo, rerun) {
+    const d = state.dp;
+    const f = field('dimensions');
+    const input = el('input');
+    input.type = 'text';
+    input.style.width = '210px';
+    input.value = d.dims.join(' x ');
+    input.addEventListener('input', () => {
+      const parsed = input.value.split(/[^0-9]+/).map(Number).filter((x) => x > 0);
+      if (parsed.length >= 2) { d.dims = parsed.slice(0, 8); rerun(); }
+    });
+    f.append(input);
+
+    const shapes = el('span', 'field');
+    const describe = () => {
+      shapes.textContent = d.dims.slice(0, -1)
+        .map((_, i) => `A${i + 1}=${d.dims[i]}x${d.dims[i + 1]}`).join('  ');
+    };
+    describe();
+    shapes.style.opacity = '.7';
+
+    box.append(
+      f,
+      button('classic example', () => { d.dims = [10, 30, 5, 60]; rebuild(box, algo, rerun); }),
+      button('textbook chain', () => { d.dims = [30, 35, 15, 5, 10, 20, 25]; rebuild(box, algo, rerun); }),
+      button('random', () => {
+        const k = 4 + Math.floor(Math.random() * 3);
+        d.dims = Array.from({ length: k }, () => 5 * (1 + Math.floor(Math.random() * 12)));
+        rebuild(box, algo, rerun);
+      }),
+      shapes,
+    );
+    return () => ({ dims: d.dims });
   },
 
   'dp-knapsack'(box, algo, rerun) {

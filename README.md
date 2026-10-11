@@ -1,6 +1,6 @@
 # Algorithm Visualizer
 
-A browser-based visualizer for 74 classic algorithms — sorting, searching,
+A browser-based visualizer for 75 classic algorithms — sorting, searching,
 pathfinding, graphs, trees, dynamic programming, string matching, backtracking
 and maze generation.
 
@@ -60,7 +60,7 @@ move the start and goal.
 | Pathfinding | 6 | BFS, DFS, Dijkstra, A*, greedy best-first, bidirectional BFS |
 | Graphs | 11 | BFS, DFS, Dijkstra, Bellman-Ford, **Floyd-Warshall**, topological sort, union-find, Kruskal, Prim, cycle detection, **Tarjan's SCC** |
 | Trees | 13 | BST insert/search/delete, in/pre/post/level-order traversal, AVL insert, red-black insert, binary heap, trie insert/search, **Huffman coding** |
-| Dynamic programming | 7 | Fibonacci, LIS, coin change, subset sum, knapsack, LCS, edit distance |
+| Dynamic programming | 8 | Fibonacci, LIS, coin change, subset sum, knapsack, LCS, edit distance, **matrix chain order** |
 | String matching | 4 | naive, KMP, Boyer-Moore, Rabin-Karp |
 | Backtracking | 3 | N-Queens, Sudoku, Towers of Hanoi |
 | Maze generation | 3 | recursive backtracker, randomized Prim, recursive division |
@@ -85,6 +85,10 @@ move the start and goal.
   That is the whole reason Python and Java use it.
 - **Trie Search** for `CAR` when `CARD` and `CARE` are stored — it lands on a
   node with no ✓, which is exactly what autocomplete is.
+- **Matrix Chain Order** — watch it fill *diagonally* instead of row by row,
+  because a long chain can only be solved once the shorter ones inside it are.
+  The textbook chain costs 15,125 multiplications in the best order and 40,500
+  left to right.
 - **Huffman Coding** on `ABRACADABRA`: 23 bits instead of 88. Then try the
   "all equal" preset — when every character is equally common there is nothing
   to exploit and it barely compresses at all.
