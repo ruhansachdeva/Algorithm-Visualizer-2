@@ -254,6 +254,10 @@ export function generateArray(n, dist) {
       const pool = randomInts(Math.max(2, Math.ceil(n / 8)));
       return Array.from({ length: n }, () => pool[Math.floor(Math.random() * pool.length)]);
     }
+    case 'signed':
+      // Negative values exercise the zero line in the chart, and several
+      // sorts have subtly different behaviour once values go below zero.
+      return Array.from({ length: n }, () => Math.floor(Math.random() * 120) - 55);
     case 'sawtooth': {
       const period = Math.max(3, Math.floor(n / 4));
       return Array.from({ length: n }, (_, i) => 5 + (i % period) * Math.floor(90 / period));
@@ -336,6 +340,7 @@ const DISTRIBUTIONS = [
   ['reversed', 'reversed'],
   ['few', 'few unique values'],
   ['sawtooth', 'sawtooth'],
+  ['signed', 'mixed positive / negative'],
 ];
 
 const builders = {
