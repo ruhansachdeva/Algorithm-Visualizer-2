@@ -56,8 +56,35 @@ export const HIT_TEST = {
   grid: cellAt,
 };
 
+/**
+ * The algorithm most people should reach for in each category, and why.
+ *
+ * "Best" is not the same as "fastest on paper" — it is the one whose
+ * trade-offs suit the most situations. Where two genuinely split the job
+ * between them, both are marked.
+ */
+export const PICKS = {
+  'timsort':        'What Python, Java and Swift actually use. O(n log n) guaranteed, stable, and it exploits runs that are already in order — so real-world data, which is rarely shuffled, sorts far faster than the worst case suggests.',
+  'quick':          'Usually the fastest in practice despite an O(n²) worst case: it sorts in place with excellent cache behaviour and a very tight inner loop. Pick it when memory matters and the data is not adversarial.',
+  'binary':         'Twenty steps to search a million items instead of a million. The cost is that the data must be sorted first — but if you search more than a handful of times, sorting once pays for itself immediately.',
+  'grid-astar':     'Dijkstra with a sense of direction. Still guaranteed to find the shortest path, but it aims at the goal instead of spreading in all directions, so it explores a fraction of the cells.',
+  'graph-dijkstra': 'The standard answer for shortest paths with varying costs. O(E log V) with a heap, and correct for any graph without negative edges — which is nearly all of them.',
+  'avl-insert':     'Strictly balanced, so lookups are as fast as a binary search tree can offer. Choose it when you read far more often than you write.',
+  'rb-insert':      'Rebalances with fewer rotations than AVL, so writes are cheaper. This is why std::map, Java TreeMap and the Linux scheduler all use it. Choose it when you write as often as you read.',
+  'dp-lcs':         'The clearest example of the whole technique: a two-dimensional table, an obvious recurrence, and a real use — it is the engine inside diff and every "what changed?" view.',
+  'str-kmp':        'Linear time with no worst case to worry about, because it never re-reads a character of the text. Boyer-Moore is usually faster on ordinary prose, but KMP never degrades.',
+  'str-boyer-moore':'Fastest in practice on natural text — it reads right to left and can skip a whole pattern width at a time, so longer patterns actually search faster. This is roughly what your editor\'s find does.',
+  'maze-backtracker':'Produces the most satisfying mazes to solve: long winding corridors and few dead ends, because it always tunnels as deep as it can before retreating.',
+  'bt-hanoi':       'The clearest demonstration of recursion in the whole collection — three lines of logic, a provably optimal 2\u207f\u22121 moves, and you can see the self-similar structure in the animation.',
+};
+
 export const ALL = CATEGORIES.flatMap((c) =>
-  c.algorithms.map((a) => ({ ...a, category: c.id, categoryName: c.name }))
+  c.algorithms.map((a) => ({
+    ...a,
+    category: c.id,
+    categoryName: c.name,
+    pick: PICKS[a.id] || null,
+  }))
 );
 
 export function findAlgo(id) {
