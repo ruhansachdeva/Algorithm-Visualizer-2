@@ -496,6 +496,24 @@ window.addEventListener('keydown', (e) => {
   }
 });
 
+/* ───────────────────── copy a link ─────────────────────── */
+
+/* Deep links already work; this just saves hand-assembling one. */
+const copyBtn = $('copy-link');
+copyBtn.addEventListener('click', async () => {
+  const base = location.href.split('#')[0];
+  const where = current ? current.id + (rival ? `+${rival.id}` : '') + `@${player.index}` : '';
+  try {
+    await navigator.clipboard.writeText(`${base}#${where}`);
+    copyBtn.textContent = '✓';
+  } catch {
+    // Clipboard access can be refused; fall back to showing the link.
+    location.hash = where;
+    copyBtn.textContent = '↑';
+  }
+  setTimeout(() => { copyBtn.textContent = '⧉'; }, 1200);
+});
+
 /* ───────────────────── help overlay ────────────────────── */
 
 const help = $('help');
