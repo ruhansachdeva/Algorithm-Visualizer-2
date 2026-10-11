@@ -20,6 +20,7 @@ export const state = {
   words:  { list: 'CAT, CAR, CARD, CARE, DOG, DO, DONE', target: 'CARD' },
   huffman:{ text: 'ABRACADABRA' },
   sieve:  { limit: 120 },
+  points: { n: 22, shape: 'scattered', data: null },
   pair:   { a: 1071, b: 462 },
   power:  { base: 7, exp: 19, mod: 1000000007 },
   palindrome: { text: 'BANANARAMA' },
@@ -451,6 +452,48 @@ const builders = {
     hint.style.opacity = '.7';
     box.append(hint);
     return () => ({ base: s.base, exp: s.exp, mod: s.mod });
+  },
+
+  /* ── a cloud of 2D points ── */
+  points(box, algo, rerun) {
+    const s = state.points;
+
+    const make = () => {
+      const n = s.n;
+      if (s.shape === 'circle') {
+        // Points near a circle: almost every one ends up on the hull.
+        s.data = Array.from({ length: n }, (_, i) => {
+          const a = (i / n) * Math.PI * 2 + Math.random() * 0.1;
+          const r = 0.42 + Math.random() * 0.04;
+          return { x: 0.5 + r * Math.cos(a), y: 0.5 + r * Math.sin(a) };
+        });
+      } else if (s.shape === 'clustered') {
+        // A tight blob: a handful of corners and a lot of interior.
+        s.data = Array.from({ length: n }, () => ({
+          x: 0.5 + (Math.random() - 0.5) * 0.45 * Math.random(),
+          y: 0.5 + (Math.random() - 0.5) * 0.45 * Math.random(),
+        }));
+      } else {
+        s.data = Array.from({ length: n }, () => ({
+          x: 0.06 + Math.random() * 0.88,
+          y: 0.06 + Math.random() * 0.88,
+        }));
+      }
+    };
+    if (!s.data || s.data.length !== s.n) make();
+
+    box.append(
+      slider('points', { min: 3, max: 90, value: s.n }, (v) => { s.n = v; make(); rerun(); }),
+      button('new points', () => { make(); rerun(); }),
+    );
+    for (const [key, name] of [['scattered', 'scattered'], ['clustered', 'clustered'], ['circle', 'near a circle']]) {
+      box.append(button(name, () => { s.shape = key; make(); rebuild(box, algo, rerun); }, { active: s.shape === key }));
+    }
+    const hint = el('span', 'field', 'on a circle almost every point is a corner; in a cluster almost none are');
+    hint.style.opacity = '.7';
+    box.append(hint);
+
+    return () => ({ points: s.data });
   },
 
   /* ── an upper limit, for sieves ── */
