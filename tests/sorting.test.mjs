@@ -41,21 +41,66 @@ export async function run() {
   check(t.stats['natural runs'] === 1, `Timsort found ${t.stats['natural runs']} runs on sorted input, wanted 1`);
   check(t.stats.merges === 0, `Timsort did ${t.stats.merges} merges on sorted input, wanted 0`);
 
-  /* Stability: equal keys must keep their original order. Encoding each key
-     as key*100 + position lets us check that without a separate mechanism. */
-  for (const algo of SORTING.filter((a) => a.cost.stable === 'Yes' && a.id !== 'bogo')) {
-    const keys = Array.from({ length: 30 }, () => Math.floor(Math.random() * 5));
-    const decorated = keys.map((k, i) => k * 100 + i);
-    const out = record(algo.run({ array: decorated.slice() }), 200000).at(-1).array;
+  /* Stability, tested by its actual definition.
 
-    const lastSeen = new Map();
-    let stable = true;
-    for (const v of out) {
-      const key = Math.floor(v / 100), pos = v % 100;
-      if (lastSeen.has(key) && lastSeen.get(key) > pos) stable = false;
-      lastSeen.set(key, pos);
+     The problem: these sorts work on plain numbers, and two equal numbers
+     are indistinguishable, so you cannot see whether their order was
+     preserved. Decorating each value with its index does not help — it
+     makes every value distinct, so the sort never meets a tie and the test
+     becomes vacuous.
+
+     The trick: JavaScript's relational operators call valueOf(). An object
+     that reports a number compares exactly like that number, while staying
+     a distinct object you can identify afterwards. So equal KEYS stay equal
+     to the algorithm, and stay distinguishable to us.
+
+     Ten of the eleven stable sorts survive this. Radix sort rebuilds its
+     values arithmetically when emitting its final frame, which turns them
+     back into plain numbers, so it falls back to the weaker check below. */
+
+  const tagged = (key, id) => ({ valueOf: () => key, toString: () => String(key), key, id });
+  const DUPLICATE_HEAVY = [
+    [3, 1, 3, 1, 2, 2, 3, 1],
+    [5, 5, 5, 5],
+    [2, 1, 2, 1],
+    [9, 4, 9, 4, 9, 4, 1],
+    [1, 1, 2, 2, 3, 3, 1, 2, 3],
+  ];
+
+  for (const algo of SORTING.filter((a) => a.cost.stable === 'Yes')) {
+    for (const keys of DUPLICATE_HEAVY) {
+      const input = keys.map(tagged);
+      const out = record(algo.run({ array: input.slice() }), 200000).at(-1).array;
+
+      const keptIdentity = out.every((v) => v && typeof v === 'object' && 'id' in v);
+
+      if (keptIdentity) {
+        // The real definition: among equal keys, original order is preserved.
+        check(out.every((v, i) => i === 0 || out[i - 1].key <= v.key),
+          `${algo.id} did not sort [${keys}] correctly`);
+
+        const lastId = new Map();
+        let ordered = true;
+        for (const v of out) {
+          if (lastId.has(v.key) && lastId.get(v.key) > v.id) ordered = false;
+          lastId.set(v.key, v.id);
+        }
+        check(ordered, `${algo.id} claims to be stable but reordered equal keys in [${keys}]`);
+      } else {
+        // Fallback for an algorithm that rebuilds its values: a stable sort
+        // must never EXCHANGE two equal elements, since that reverses them.
+        // A shift also marks two cells, so the swap counter tells them apart.
+        const frames = record(algo.run({ array: keys.slice() }), 200000);
+        let offender = null;
+        for (let k = 1; k < frames.length && !offender; k++) {
+          const f = frames[k];
+          if (!Array.isArray(f.swap) || f.swap.length !== 2 || f.swap[0] === f.swap[1]) continue;
+          if ((f.stats?.swaps ?? 0) <= (frames[k - 1].stats?.swaps ?? 0)) continue;
+          if (f.array[f.swap[0]] === f.array[f.swap[1]]) offender = f;
+        }
+        check(!offender, `${algo.id} exchanged two equal values in [${keys}]`);
+      }
     }
-    check(stable, `${algo.id} claims to be stable but reordered equal keys`);
   }
 
   return tally();
