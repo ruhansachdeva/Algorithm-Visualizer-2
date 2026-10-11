@@ -112,6 +112,12 @@ split the job between reads and writes.
 
 ### Some things worth trying
 
+- **Binary Search** with the list set to **unsorted**. It cannot run until the
+  list is sorted, so it sorts first — on screen, and on the bill. Four steps to
+  search, but a hundred-odd comparisons to sort, against a linear scan's
+  twenty-three. For a *single* lookup, linear search wins outright, and the
+  verdict says from roughly which search onwards sorting starts to pay.
+
 - Set the array shape to **already sorted**, then run **BST Insert** and
   **AVL Insert** back to back. The plain BST collapses into a list of height 15;
   the AVL rotates its way to height 4.
