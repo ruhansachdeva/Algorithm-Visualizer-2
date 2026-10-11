@@ -31,7 +31,7 @@
 
   <!-- ───────────────── left: algorithm picker ───────────────── -->
   <nav class="sidebar" id="sidebar" aria-label="Algorithms">
-    <input type="search" id="algo-filter" class="filter" placeholder="Search algorithms…" autocomplete="off">
+    <input type="search" id="algo-filter" class="filter" placeholder="Search algorithms…" autocomplete="off" aria-label="Search algorithms">
     <div id="algo-list" class="algo-list"></div>
   </nav>
 
@@ -40,14 +40,14 @@
     <div class="stage-head">
       <div>
         <h2 id="algo-title">—</h2>
-        <p id="algo-note" class="note">Pick an algorithm to begin.</p>
+        <p id="algo-note" class="note" role="status" aria-live="polite">Pick an algorithm to begin.</p>
       </div>
       <div class="stage-head-right">
         <div class="legend" id="legend"></div>
       </div>
     </div>
 
-    <div class="stage" id="stage">
+    <div class="stage" id="stage" role="img" aria-label="Algorithm visualization">
       <div class="race-pane" id="pane-a">
         <div class="race-head" id="head-a"></div>
         <canvas id="canvas"></canvas>
@@ -72,18 +72,18 @@
       </div>
 
       <div class="scrub-wrap">
-        <input type="range" id="scrub" class="scrub" min="0" max="0" value="0">
+        <input type="range" id="scrub" class="scrub" min="0" max="0" value="0" aria-label="Scrub through the steps">
         <div class="scrub-label"><span id="step-label">step 0 / 0</span></div>
       </div>
 
       <label class="speed">
         speed
-        <input type="range" id="speed" min="1" max="100" value="55">
+        <input type="range" id="speed" min="1" max="100" value="55" aria-label="Playback speed">
       </label>
 
       <label class="speed race-picker" id="race-wrap">
         race
-        <select id="race-select"><option value="">off</option></select>
+        <select id="race-select" aria-label="Race against another algorithm"><option value="">off</option></select>
       </label>
     </div>
 
