@@ -120,4 +120,79 @@ const graham = {
 
 const letter = (i) => `P${i}`;
 
-export const GEOMETRY = [graham];
+
+/* ──────────── Jarvis march (gift wrapping) ─────────────── */
+
+const jarvis = {
+  ...base,
+  id: 'geo-jarvis',
+  name: 'Convex Hull (Gift Wrapping)',
+  about: 'The same hull, found by literally wrapping. Stand on a point you know is a corner, then sweep for the one point with everything else to its right — that has to be the next corner. Repeat until you come back round. Its cost is O(n·h), where h is the number of corners, so on a tight cluster with a 4-corner hull it beats the Graham scan outright, and on points near a circle, where nearly everything is a corner, it collapses to O(n²).',
+  cost: { best: 'O(n)', avg: 'O(n·h)', worst: 'O(n²)', space: 'O(h)', stable: '—' },
+  pseudocode: [
+    'start at the leftmost point — it must be a corner',
+    'repeat:',
+    '  try every other point as the next corner',
+    '  keep the one with every remaining point to its right',
+    '  add it to the hull and stand there instead',
+    'stop when you arrive back at the start',
+  ],
+  *run({ points }) {
+    const pts = points;
+    const n = pts.length;
+    if (n < 3) {
+      yield { points: pts, hull: pts.map((_, i) => i), closed: n > 1, note: 'need at least three points', stats: { points: n } };
+      return;
+    }
+
+    let start = 0;
+    for (let i = 1; i < n; i++) if (pts[i].x < pts[start].x || (pts[i].x === pts[start].x && pts[i].y < pts[start].y)) start = i;
+
+    const hull = [];
+    let tests = 0, sweeps = 0;
+    const f = (extra) => ({
+      points: pts, pivot: start,
+      stats: { points: n, 'candidates tried': tests, 'sweeps round the cloud': sweeps, 'hull corners': hull.length },
+      ...extra,
+    });
+
+    yield f({ current: start, line: 0, note: 'the leftmost point must be a corner — nothing lies to its left' });
+
+    let here = start;
+    do {
+      hull.push(here);
+      sweeps++;
+      let best = -1;
+
+      for (let cand = 0; cand < n; cand++) {
+        if (cand === here) continue;
+        tests++;
+
+        if (best === -1) { best = cand; continue; }
+
+        yield f({
+          hull: hull.slice(), current: here, probe: [here, best, cand], line: 2,
+          note: `from P${here}: is P${cand} further round than P${best}?`,
+        });
+
+        const t = turn(pts[here], pts[best], pts[cand]);
+        if (t < 0) {
+          // cand is to the right of here→best, so it wraps tighter
+          best = cand;
+          yield f({ hull: hull.slice(), current: here, probe: [here, best], line: 3, note: `yes — P${cand} wraps tighter, it is the new candidate` });
+        }
+      }
+
+      yield f({ hull: hull.slice().concat(best === start ? [] : [best]), current: best, line: 4, note: best === start ? 'back at the start — the hull is closed' : `P${best} is a corner` });
+      here = best;
+    } while (here !== start && hull.length <= n);
+
+    yield f({
+      hull: hull.slice(), closed: true, line: 5,
+      note: `${hull.length} corners found in ${sweeps} sweeps — Graham scan would have sorted all ${n} points first, this only needed ${tests} comparisons`,
+      stats: { points: n, 'candidates tried': tests, 'sweeps round the cloud': sweeps, 'hull corners': hull.length },
+    });
+  },
+};
+
+export const GEOMETRY = [graham, jarvis];
