@@ -81,28 +81,41 @@ body {
 
 .topbar {
   flex: none;
-  height: 52px;
-  padding: 0 16px;
+  height: 58px;
+  padding: 0 18px;
   background: var(--bg-panel);
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
   justify-content: space-between;
+  /* A hairline of colour so the header reads as a header, not a strip. */
+  box-shadow: inset 0 -1px 0 var(--border), 0 1px 0 rgba(0, 0, 0, .04);
 }
 
-.brand { display: flex; align-items: center; gap: 10px; }
+.brand { display: flex; align-items: center; gap: 11px; }
+
+.brand-text { display: flex; flex-direction: column; gap: 1px; }
 
 .brand h1 {
-  font-size: 15px;
-  font-weight: 600;
+  font-size: 14.5px;
+  font-weight: 650;
   margin: 0;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.012em;
+  line-height: 1.1;
+}
+
+.tagline {
+  margin: 0;
+  font-size: 11px;
+  color: var(--text-faint);
+  line-height: 1.1;
 }
 
 .logo {
-  width: 18px; height: 18px;
-  border-radius: 4px;
+  width: 26px; height: 26px;
+  border-radius: 7px;
   background: linear-gradient(135deg, var(--c-cursor), var(--c-sorted));
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--c-cursor) 35%, transparent);
 }
 
 .topbar-right { display: flex; align-items: center; gap: 12px; }
