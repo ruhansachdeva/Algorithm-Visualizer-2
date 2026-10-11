@@ -46,13 +46,15 @@
   --text-dim:  #5c6673;
   --text-faint:#8b96a5;
 
-  --c-idle:    #b6c0cd;
-  --c-compare: #e0a106;
-  --c-swap:    #e03131;
-  --c-sorted:  #16a34a;
-  --c-cursor:  #1971c2;
-  --c-pivot:   #9333ea;
-  --c-range:   #dbe6f5;
+  /* Light-mode bars need to be noticeably darker than the page: at
+     #b6c0cd they disappeared against the shaded active window. */
+  --c-idle:    #8b9bb0;
+  --c-compare: #d39300;
+  --c-swap:    #d92d2d;
+  --c-sorted:  #159a46;
+  --c-cursor:  #1668b8;
+  --c-pivot:   #8b2fe0;
+  --c-range:   #cddff5;
   --c-wall:    #7d8794;
   --c-visited: #1971c2;
   --c-frontier:#e0a106;
