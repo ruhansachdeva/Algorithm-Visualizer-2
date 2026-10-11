@@ -378,4 +378,97 @@ const fibonacci = {
   },
 };
 
-export const SEARCHING = [linear, binary, jump, exponential, interpolation, ternary, fibonacci];
+
+/* ──────────────────────── Quickselect ──────────────────── */
+
+const quickselect = {
+  view: 'array',
+  input: 'kth',
+  id: 'quickselect',
+  name: 'Quickselect (kth smallest)',
+  legend: [
+    ['--c-pivot',   'pivot'],
+    ['--c-compare', 'being compared'],
+    ['--c-range',   'the part that might still contain the answer'],
+    ['--c-idle',    'discarded'],
+    ['--c-found',   'the kth smallest'],
+  ],
+  about: 'Find the kth smallest value without sorting the list. It partitions exactly like quicksort, but then recurses into only ONE side — the side the answer must be in. Discarding half the work each time brings the average cost down from O(n log n) to O(n), which is why finding a median does not require sorting first.',
+  cost: { best: 'O(n)', avg: 'O(n)', worst: 'O(n²)', space: 'O(1)', stable: '—' },
+  needsSorted: false,
+  pseudocode: [
+    'partition the range around a pivot, as quicksort does',
+    'the pivot is now at its final sorted position p',
+    'if p == k, the pivot IS the kth smallest — stop',
+    'if k < p, recurse on the left part only',
+    'if k > p, recurse on the right part only',
+  ],
+  *run({ array, k }) {
+    const arr = array.slice();
+    const n = arr.length;
+    const target = Math.max(0, Math.min(n - 1, k));
+    let lo = 0, hi = n - 1;
+    let comparisons = 0, partitions = 0;
+
+    const dead = () => {
+      const out = [];
+      for (let i = 0; i < n; i++) if (i < lo || i > hi) out.push(i);
+      return out;
+    };
+    const f = (extra) => ({
+      array: arr.slice(),
+      range: hi >= lo ? [lo, hi] : undefined,
+      dead: dead(),
+      stats: { comparisons, partitions, 'still in play': Math.max(0, hi - lo + 1) },
+      ...extra,
+    });
+
+    yield f({ line: 0, note: `looking for the ${ordinal(target + 1)} smallest of ${n}` });
+
+    while (lo <= hi) {
+      if (lo === hi) {
+        yield f({ found: lo, line: 2, note: `one value left — arr[${lo}] = ${arr[lo]} is the ${ordinal(target + 1)} smallest` });
+        return;
+      }
+
+      const pivotVal = arr[hi];
+      let boundary = lo;
+      partitions++;
+      yield f({ pivot: hi, line: 0, note: `pivot = ${pivotVal}` });
+
+      for (let i = lo; i < hi; i++) {
+        comparisons++;
+        yield f({ pivot: hi, compare: [i], cursor: boundary, line: 0, note: `is ${arr[i]} < ${pivotVal}?` });
+        if (arr[i] < pivotVal) {
+          if (i !== boundary) {
+            [arr[i], arr[boundary]] = [arr[boundary], arr[i]];
+            yield f({ pivot: hi, swap: [i, boundary], line: 0, note: 'smaller — move it left' });
+          }
+          boundary++;
+        }
+      }
+      [arr[boundary], arr[hi]] = [arr[hi], arr[boundary]];
+      yield f({ pivot: boundary, swap: [boundary, hi], line: 1, note: `pivot lands at ${boundary} — that is its final sorted position` });
+
+      if (boundary === target) {
+        yield f({ found: boundary, line: 2, note: `${arr[boundary]} is the ${ordinal(target + 1)} smallest — found without sorting the rest`, stats: { comparisons, partitions, 'still in play': 1 } });
+        return;
+      }
+      if (target < boundary) {
+        hi = boundary - 1;
+        yield f({ line: 3, note: `the answer is to the left — discard ${n - (hi - lo + 1)} values and never look at them again` });
+      } else {
+        lo = boundary + 1;
+        yield f({ line: 4, note: `the answer is to the right — discard ${n - (hi - lo + 1)} values and never look at them again` });
+      }
+    }
+  },
+};
+
+const ordinal = (k) => {
+  const s = ['th', 'st', 'nd', 'rd'];
+  const v = k % 100;
+  return k + (s[(v - 20) % 10] || s[v] || s[0]);
+};
+
+export const SEARCHING = [linear, binary, quickselect, jump, exponential, interpolation, ternary, fibonacci];

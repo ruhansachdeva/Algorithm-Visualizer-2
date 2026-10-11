@@ -13,6 +13,7 @@
 export const state = {
   array:  { size: 30, dist: 'random', data: null },
   search: { size: 24, target: 7, data: null },
+  kth:    { size: 24, k: 11, data: null },
   graph:  { size: 9, extra: 0.35, negativeCycle: false, cache: null, key: '' },
   tree:   { size: 10, sorted: false, values: null, target: null },
   string: { text: 'ABACADABRABRACADABRA', pattern: 'ABRA' },
@@ -923,6 +924,32 @@ const builders = {
     }
 
     return () => g.cache;
+  },
+
+  /* ── an unsorted list and a rank to find ── */
+  kth(box, algo, rerun) {
+    const s = state.kth;
+    if (!s.data || s.data.length !== s.size) s.data = generateArray(s.size, 'random');
+    if (s.k >= s.size) s.k = Math.floor(s.size / 2);
+
+    const kField = slider('k (0 = smallest)', { min: 0, max: s.size - 1, value: s.k }, (v) => { s.k = v; rerun(); });
+
+    box.append(
+      slider('items', { min: 3, max: 80, value: s.size }, (v) => {
+        s.size = v;
+        s.k = Math.min(s.k, v - 1);
+        s.data = generateArray(v, 'random');
+        rebuild(box, algo, rerun);
+      }),
+      kField,
+      button('median', () => { s.k = Math.floor((s.size - 1) / 2); rebuild(box, algo, rerun); }),
+      button('new list', () => { s.data = generateArray(s.size, 'random'); rerun(); }),
+    );
+    const hint = el('span', 'field', 'the list is NOT sorted — that is the point');
+    hint.style.opacity = '.7';
+    box.append(hint);
+
+    return () => ({ array: s.data, k: s.k });
   },
 
   /* ── 2D board, for pathfinding and mazes ── */
