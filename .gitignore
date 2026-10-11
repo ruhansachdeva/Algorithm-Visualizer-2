@@ -2,8 +2,9 @@
 .DS_Store
 ._*
 
-# editors
-.vscode/
+# editors — but keep the shared VS Code task, it's part of the project
+.vscode/*
+!.vscode/tasks.json
 .idea/
 *.swp
 

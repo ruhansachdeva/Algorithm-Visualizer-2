@@ -12,9 +12,18 @@ arrows under numbers.
 There is no build step, no `npm install`, no toolchain — but it does need to
 be served over `http://`, not opened as a file.
 
-**Double-click `start.command`.** It starts a local server and opens your
-browser. Leave the Terminal window it opens alone while you use the app; close
-it when you're done.
+**In VS Code:** press `Cmd+Shift+B`, or Terminal → Run Build Task. That runs
+the server and opens the app.
+
+**In Finder:** double-click `start.command`. (Double-clicking it inside VS
+Code only opens it for editing — VS Code never runs a file you click.) The
+first time, macOS may warn about an unidentified developer: right-click the
+file → **Open** → **Open**, once.
+
+**In any terminal:** `./start.command`
+
+Whichever you use, leave the terminal window open while you use the app and
+close it when you're done.
 
 Or do the same thing by hand:
 
