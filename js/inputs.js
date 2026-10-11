@@ -403,13 +403,14 @@ const builders = {
     box.append(
       slider('items', { min: 4, max: 90, value: s.size }, (v) => { s.size = v; regen(); rerun(); }),
       targetField,
-      button(s.presorted ? 'list: sorted' : 'list: unsorted', (b) => {
-        s.presorted = !s.presorted;
-        b.textContent = s.presorted ? 'list: sorted' : 'list: unsorted';
-        b.classList.toggle('on', !s.presorted);
-        regen();
-        rerun();
-      }, { active: !s.presorted }),
+      // A dropdown rather than a toggle button: "list: sorted" read as a
+      // label rather than a control, so nobody found it.
+      selectBox('list order', [['sorted', 'already sorted'], ['unsorted', 'unsorted']],
+        s.presorted ? 'sorted' : 'unsorted', (v) => {
+          s.presorted = v === 'sorted';
+          regen();
+          rebuild(box, algo, rerun);
+        }),
       button('pick one that exists', () => {
         s.target = s.data[Math.floor(random() * s.data.length)];
         targetField.querySelector('input').value = s.target;
