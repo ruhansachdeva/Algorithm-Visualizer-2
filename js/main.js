@@ -204,6 +204,14 @@ function buildSidebar(filterText = '') {
           algo.name.slice(hit + q.length),
         );
       }
+      if (algo.pick) {
+        const star = document.createElement('span');
+        star.className = 'pick-badge';
+        star.textContent = '\u2605';
+        star.title = 'Worth reaching for first — see the panel on the right';
+        b.append(star);
+      }
+
       b.addEventListener('click', () => select(algo.id));
       group.append(b);
     }

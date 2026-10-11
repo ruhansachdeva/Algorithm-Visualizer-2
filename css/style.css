@@ -228,7 +228,9 @@ body {
 }
 
 .algo-btn {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 6px;
   width: 100%;
   text-align: left;
   padding: 6px 10px;
@@ -243,6 +245,14 @@ body {
   transition: background .1s, color .1s;
 }
 .algo-btn:hover { background: var(--bg-hover); color: var(--text); }
+
+.pick-badge {
+  margin-left: auto;
+  font-size: 9px;
+  line-height: 1;
+  color: var(--cat, var(--accent));
+  opacity: .85;
+}
 
 .algo-btn mark {
   background: color-mix(in srgb, var(--c-compare) 32%, transparent);
