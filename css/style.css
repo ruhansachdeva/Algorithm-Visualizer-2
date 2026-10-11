@@ -917,3 +917,98 @@ body.truncated .scrub-label::after {
   font-weight: 700;
 }
 body.truncated .note { color: var(--c-swap); }
+
+/* ───────────────────── race result ─────────────────────── */
+
+.race-result {
+  flex: none;
+  background: var(--bg-panel);
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--border));
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.race-result[hidden] { display: none; }
+
+.race-result-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 9px 13px;
+}
+
+.race-verdict {
+  font-size: 12.5px;
+  color: var(--text);
+  line-height: 1.45;
+}
+.race-verdict b { color: var(--c-sorted); font-weight: 650; }
+.race-verdict .ratio {
+  font-family: var(--mono);
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.race-more {
+  flex: none;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  color: var(--text-dim);
+  padding: 4px 10px;
+  font-family: var(--sans);
+  font-size: 11.5px;
+  cursor: pointer;
+  transition: background .1s, color .1s;
+}
+.race-more:hover { background: var(--bg-hover); color: var(--text); }
+.race-more::after { content: ' ▾'; font-size: 9px; }
+.race-more[aria-expanded="true"]::after { content: ' ▴'; }
+
+.race-detail {
+  border-top: 1px solid var(--border);
+  padding: 11px 13px 13px;
+}
+.race-detail[hidden] { display: none; }
+
+.race-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.race-table th {
+  text-align: right;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  padding: 0 0 6px;
+}
+.race-table th:first-child { text-align: left; }
+.race-table td {
+  padding: 3px 0;
+  text-align: right;
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-dim);
+}
+.race-table td:first-child {
+  text-align: left;
+  font-family: var(--sans);
+  color: var(--text-faint);
+}
+.race-table td.fewer { color: var(--text); font-weight: 700; }
+.race-table td.fewer::after {
+  content: ' ·';
+  color: var(--c-sorted);
+}
+.race-table tr.headline td { border-bottom: 1px solid var(--border); padding-bottom: 7px; }
+.race-table tr.headline td:first-child { color: var(--text-dim); font-weight: 600; }
+
+.race-footnote {
+  margin: 9px 0 0;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--text-faint);
+}

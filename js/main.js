@@ -87,6 +87,7 @@ const player = new Player({
     const pct = total > 1 ? Math.round((i / (total - 1)) * 100) : 100;
     dom.stepLabel.textContent = `step ${(i + 1).toLocaleString()} / ${total.toLocaleString()}  ·  ${pct}%`;
     if (frame._race) {
+      $('race-result').hidden = !(frame.doneA && frame.doneB);
       dom.note.textContent = `${current.name} vs ${rival.name} — same input, stepped together`;
       renderStats(frame.a.stats);
       highlightLine(frame.a.line);
@@ -356,7 +357,13 @@ function rerun(preserveStep = false) {
     // its frames are 81 bytes each, so it can afford a bigger allowance.
     frames = record(current.run(input), current.maxFrames ?? 60000);
 
-    if (rival) frames = buildRace(frames, record(rival.run(input), rival.maxFrames ?? 60000));
+    if (rival) {
+      frames = buildRace(frames, record(rival.run(input), rival.maxFrames ?? 60000));
+      renderRaceSummary();
+    } else {
+      raceInfo = null;
+      $('race-result').hidden = true;
+    }
   } catch (err) {
     // Show the failure in the stage rather than leaving the last run's
     // picture on screen looking like it is still valid.
@@ -379,6 +386,88 @@ function rerun(preserveStep = false) {
   if (pendingStep !== null) {
     player.seek(pendingStep);
     pendingStep = null;
+  }
+}
+
+/**
+ * Build the end-of-race summary. Called once per race rather than per
+ * frame, so the breakdown stays open if the user opened it.
+ *
+ * The headline is decided on STEPS, which is unambiguous — fewer frames
+ * means it got there sooner. Individual counters are only ever marked
+ * "fewer", never "better": fewer writes is good, but fewer natural runs
+ * or fewer characters skipped is not, and the app should not pretend to
+ * know which is which.
+ */
+function renderRaceSummary() {
+  const el = $('race-result');
+  if (!rival || !raceInfo) { el.hidden = true; return; }
+
+  const { aSteps, bSteps, aFinal, bFinal } = raceInfo;
+  const verdict = $('race-verdict');
+  verdict.replaceChildren();
+
+  const faster = aSteps === bSteps ? null : (aSteps < bSteps ? current : rival);
+  const ratio = Math.max(aSteps, bSteps) / Math.max(1, Math.min(aSteps, bSteps));
+
+  if (!faster) {
+    verdict.append(`Dead heat — both finished in ${aSteps.toLocaleString()} steps.`);
+  } else {
+    verdict.append(
+      Object.assign(document.createElement('b'), { textContent: faster.name }),
+      ` finished in ${Math.min(aSteps, bSteps).toLocaleString()} steps against ${Math.max(aSteps, bSteps).toLocaleString()} — `,
+      Object.assign(document.createElement('span'), { className: 'ratio', textContent: `${ratio.toFixed(1)}×` }),
+      ' sooner.',
+    );
+  }
+
+  /* ── the breakdown: every counter both sides reported ── */
+  const aStats = aFinal?.stats || {};
+  const bStats = bFinal?.stats || {};
+  const shared = Object.keys(aStats).filter((k) => k in bStats);
+
+  const table = document.createElement('table');
+  table.className = 'race-table';
+
+  const head = document.createElement('tr');
+  head.append(
+    Object.assign(document.createElement('th'), { textContent: '' }),
+    Object.assign(document.createElement('th'), { textContent: current.name }),
+    Object.assign(document.createElement('th'), { textContent: rival.name }),
+  );
+  table.append(head);
+
+  const row = (label, av, bv, headline = false) => {
+    const tr = document.createElement('tr');
+    if (headline) tr.className = 'headline';
+    const numeric = typeof av === 'number' && typeof bv === 'number' && av !== bv;
+    const tdA = Object.assign(document.createElement('td'), {
+      textContent: typeof av === 'number' ? av.toLocaleString() : String(av),
+    });
+    const tdB = Object.assign(document.createElement('td'), {
+      textContent: typeof bv === 'number' ? bv.toLocaleString() : String(bv),
+    });
+    if (numeric) (av < bv ? tdA : tdB).classList.add('fewer');
+    tr.append(Object.assign(document.createElement('td'), { textContent: label }), tdA, tdB);
+    table.append(tr);
+  };
+
+  row('steps to finish', aSteps, bSteps, true);
+  for (const k of shared) row(k, aStats[k], bStats[k]);
+
+  const detail = $('race-detail');
+  detail.replaceChildren(table);
+
+  if (!shared.length) {
+    detail.append(Object.assign(document.createElement('p'), {
+      className: 'race-footnote',
+      textContent: 'These two report different counters, so there is nothing to line up beyond the step count.',
+    }));
+  } else {
+    detail.append(Object.assign(document.createElement('p'), {
+      className: 'race-footnote',
+      textContent: 'A dot marks the smaller number. Smaller is not always better — fewer comparisons is good, fewer characters skipped is not.',
+    }));
   }
 }
 
@@ -600,6 +689,13 @@ function setRival(algo) {
   dom.paneB.hidden = !algo;
   dom.raceSelect.value = algo ? algo.id : '';
 }
+
+const raceMore = $('race-more');
+raceMore.addEventListener('click', () => {
+  const open = raceMore.getAttribute('aria-expanded') === 'true';
+  raceMore.setAttribute('aria-expanded', String(!open));
+  $('race-detail').hidden = open;
+});
 
 dom.raceSelect.addEventListener('change', () => {
   setRival(dom.raceSelect.value ? findAlgo(dom.raceSelect.value) : null);
