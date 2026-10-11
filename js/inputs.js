@@ -18,6 +18,7 @@ export const state = {
   string: { text: 'ABACADABRABRACADABRA', pattern: 'ABRA' },
   words:  { list: 'CAT, CAR, CARD, CARE, DOG, DO, DONE', target: 'CARD' },
   huffman:{ text: 'ABRACADABRA' },
+  sieve:  { limit: 120 },
   palindrome: { text: 'BANANARAMA' },
   queens: { n: 8, findAll: false },
   sudoku: { which: 'easy' },
@@ -414,6 +415,18 @@ const builders = {
       box.append(hint);
     }
     return () => ({ array: s.data, target: s.target });
+  },
+
+  /* ── an upper limit, for sieves ── */
+  sieve(box, algo, rerun) {
+    const s = state.sieve;
+    box.append(
+      slider('up to', { min: 10, max: 400, value: s.limit, step: 10 }, (v) => { s.limit = v; rerun(); }),
+    );
+    const hint = el('span', 'field', 'watch the multiples of 2 go, then 3, then 5 — by 11 there is almost nothing left to cross out');
+    hint.style.opacity = '.7';
+    box.append(hint);
+    return () => ({ limit: s.limit });
   },
 
   /* ── one string to search inside ── */

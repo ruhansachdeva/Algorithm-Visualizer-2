@@ -11,6 +11,7 @@ import { TREES } from './algorithms/trees/index.js';
 import { DP } from './algorithms/dp/index.js';
 import { STRINGS } from './algorithms/strings/index.js';
 import { BACKTRACKING } from './algorithms/backtracking/index.js';
+import { MATH } from './algorithms/math/index.js';
 import { MAZES } from './algorithms/graphs/maze.js';
 
 import { drawArray } from './views/array-view.js';
@@ -20,6 +21,7 @@ import { drawTree } from './views/tree-view.js';
 import { drawTable } from './views/table-view.js';
 import { drawString } from './views/string-view.js';
 import { drawQueens, drawSudoku, drawHanoi } from './views/puzzle-view.js';
+import { drawNumbers } from './views/number-view.js';
 
 /**
  * Each category gets a colour and a one-line description. The colour is
@@ -35,6 +37,7 @@ export const CATEGORIES = [
   { id: 'dp',          name: 'Dynamic Programming', color: '#ff8c42', blurb: 'Solving each subproblem once', algorithms: DP },
   { id: 'strings',     name: 'String Matching', color: '#f472b6', blurb: 'Finding a pattern inside text', algorithms: STRINGS },
   { id: 'backtracking', name: 'Backtracking', color: '#a3e635', blurb: 'Try, fail, undo, try again', algorithms: BACKTRACKING },
+  { id: 'math',        name: 'Number Theory', color: '#38bdf8', blurb: 'Working with the integers themselves', algorithms: MATH },
   { id: 'mazes',       name: 'Maze Generation', color: '#8b96a5', blurb: 'Building a board to solve', algorithms: MAZES },
 ];
 
@@ -49,6 +52,7 @@ export const VIEWS = {
   queens: drawQueens,
   sudoku: drawSudoku,
   hanoi: drawHanoi,
+  numbers: drawNumbers,
 };
 
 /** view name -> how a mouse maps onto that view (optional) */

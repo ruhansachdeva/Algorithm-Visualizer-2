@@ -13,6 +13,7 @@ export const ICONS = {
   dp:           'M2 2h12v12H2V2zm1.5 1.5v3h3v-3h-3zm4.5 0v3h4.5v-3H8zM3.5 8v4.5h3V8h-3zM8 8v4.5h4.5V8H8z',
   strings:      'M2 3h12v1.6H2V3zm0 3.6h8v1.6H2V6.6zm0 3.6h12v1.6H2v-1.6zm0 3.6h6V15H2v-1.2z',
   backtracking: 'M8 2a6 6 0 0 1 6 6h-2a4 4 0 0 0-4-4V2zm0 12a6 6 0 0 1-6-6h2a4 4 0 0 0 4 4v2zM5.2 5.2l1.4 1.4-1.4 1.4-1.4-1.4 1.4-1.4zm5.6 3.2 1.4 1.4-1.4 1.4-1.4-1.4 1.4-1.4z',
+  math:         'M3 3h4v1.4H3V3zm0 3.2h4v1.4H3V6.2zM2.4 10h5.2v1.4H2.4V10zm0 2.6h5.2V14H2.4v-1.4zM11 2.6h1.6v4H11v-4zm-1.6 1.6h4.8v1.6H9.4V4.2zM9.4 10h4.8v1.4H9.4V10zm0 2.6h4.8V14H9.4v-1.4z',
   mazes:        'M2 2h12v12H2V2zm1.6 1.6v2.2h4.8V3.6H3.6zm6.4 0v4.8h2.4V3.6H10zM3.6 7.4v5h2.2v-5H3.6zm3.8 1.8v3.2h5V9.2h-5z',
 };
 
