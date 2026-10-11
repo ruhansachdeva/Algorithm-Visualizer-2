@@ -429,49 +429,66 @@ function renderRaceSummary() {
   const bStats = bFinal?.stats || {};
   const shared = Object.keys(aStats).filter((k) => k in bStats);
 
-  const table = document.createElement('table');
-  table.className = 'race-table';
+  const detail = $('race-detail');
+  detail.replaceChildren();
 
-  const head = document.createElement('tr');
-  head.append(
-    Object.assign(document.createElement('th'), { textContent: '' }),
-    Object.assign(document.createElement('th'), { textContent: current.name }),
-    Object.assign(document.createElement('th'), { textContent: rival.name }),
+  const grid = document.createElement('div');
+  grid.className = 'rr-grid';
+
+  // column headings
+  grid.append(
+    Object.assign(document.createElement('div'), { className: 'rr-head' }),
+    Object.assign(document.createElement('div'), { className: 'rr-head rr-a', textContent: current.name }),
+    Object.assign(document.createElement('div'), { className: 'rr-head rr-b', textContent: rival.name }),
   );
-  table.append(head);
 
+  /**
+   * One row: a label and two bars scaled against the larger of the pair.
+   * A bar is far easier to compare at a glance than two numbers sitting at
+   * opposite ends of a wide row.
+   */
   const row = (label, av, bv, headline = false) => {
-    const tr = document.createElement('tr');
-    if (headline) tr.className = 'headline';
-    const numeric = typeof av === 'number' && typeof bv === 'number' && av !== bv;
-    const tdA = Object.assign(document.createElement('td'), {
-      textContent: typeof av === 'number' ? av.toLocaleString() : String(av),
-    });
-    const tdB = Object.assign(document.createElement('td'), {
-      textContent: typeof bv === 'number' ? bv.toLocaleString() : String(bv),
-    });
-    if (numeric) (av < bv ? tdA : tdB).classList.add('fewer');
-    tr.append(Object.assign(document.createElement('td'), { textContent: label }), tdA, tdB);
-    table.append(tr);
+    const cls = headline ? ' rr-headline' : '';
+    grid.append(Object.assign(document.createElement('div'), {
+      className: 'rr-label' + cls, textContent: label,
+    }));
+
+    const numeric = typeof av === 'number' && typeof bv === 'number';
+    const max = numeric ? Math.max(av, bv, 1) : 1;
+
+    for (const [value, side] of [[av, 'a'], [bv, 'b']]) {
+      const cell = document.createElement('div');
+      cell.className = `rr-cell rr-${side}${cls}`;
+
+      if (numeric) {
+        const smaller = av !== bv && value === Math.min(av, bv);
+        const track = document.createElement('div');
+        track.className = 'rr-track';
+        const bar = document.createElement('div');
+        bar.className = 'rr-bar' + (smaller ? ' rr-smaller' : '');
+        bar.style.width = `${Math.max(2, (value / max) * 100)}%`;
+        track.append(bar);
+        cell.append(track);
+      }
+
+      cell.append(Object.assign(document.createElement('span'), {
+        className: 'rr-num' + (numeric && av !== bv && value === Math.min(av, bv) ? ' rr-win' : ''),
+        textContent: typeof value === 'number' ? value.toLocaleString() : String(value),
+      }));
+      grid.append(cell);
+    }
   };
 
   row('steps to finish', aSteps, bSteps, true);
   for (const k of shared) row(k, aStats[k], bStats[k]);
 
-  const detail = $('race-detail');
-  detail.replaceChildren(table);
-
-  if (!shared.length) {
-    detail.append(Object.assign(document.createElement('p'), {
-      className: 'race-footnote',
-      textContent: 'These two report different counters, so there is nothing to line up beyond the step count.',
-    }));
-  } else {
-    detail.append(Object.assign(document.createElement('p'), {
-      className: 'race-footnote',
-      textContent: 'A dot marks the smaller number. Smaller is not always better — fewer comparisons is good, fewer characters skipped is not.',
-    }));
-  }
+  detail.append(grid);
+  detail.append(Object.assign(document.createElement('p'), {
+    className: 'race-footnote',
+    textContent: shared.length
+      ? 'Bars are scaled against the larger value in each row. Shorter means fewer, which is not always better — fewer comparisons is good, fewer characters skipped is not.'
+      : 'These two report different counters, so there is nothing to line up beyond the step count.',
+  }));
 }
 
 /**

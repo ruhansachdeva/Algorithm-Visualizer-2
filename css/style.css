@@ -982,40 +982,85 @@ body.truncated .note { color: var(--c-swap); }
 }
 .race-detail[hidden] { display: none; }
 
-.race-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 12px;
+/* The breakdown: a label and two scaled bars per row. Bars rather than
+   bare numbers, because two figures at opposite ends of a wide row are
+   genuinely hard to compare. */
+
+.rr-grid {
+  display: grid;
+  grid-template-columns: minmax(96px, 150px) 1fr 1fr;
+  gap: 3px 18px;
+  align-items: center;
+  max-width: 860px;
 }
-.race-table th {
-  text-align: right;
+
+.rr-head {
   font-size: 10.5px;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--text-faint);
-  padding: 0 0 6px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 3px;
 }
-.race-table th:first-child { text-align: left; }
-.race-table td {
-  padding: 3px 0;
+.rr-head.rr-a { color: var(--accent); }
+.rr-head.rr-b { color: var(--text-dim); }
+
+.rr-label {
+  font-size: 12px;
+  color: var(--text-faint);
+  padding-right: 4px;
+}
+
+.rr-cell {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.rr-track {
+  flex: 1;
+  min-width: 0;
+  height: 7px;
+  border-radius: 99px;
+  background: var(--bg-sunken);
+  overflow: hidden;
+}
+
+.rr-bar {
+  height: 100%;
+  border-radius: 99px;
+  background: var(--c-idle);
+  transition: width .2s ease;
+}
+.rr-bar.rr-smaller { background: var(--c-sorted); }
+
+.rr-num {
+  flex: none;
+  min-width: 56px;
   text-align: right;
   font-family: var(--mono);
   font-variant-numeric: tabular-nums;
+  font-size: 12px;
   color: var(--text-dim);
 }
-.race-table td:first-child {
-  text-align: left;
-  font-family: var(--sans);
-  color: var(--text-faint);
+.rr-num.rr-win { color: var(--text); font-weight: 700; }
+
+/* The step count is the headline, so it reads a notch stronger and is
+   separated from the per-counter rows below it. */
+.rr-label.rr-headline {
+  color: var(--text);
+  font-weight: 600;
 }
-.race-table td.fewer { color: var(--text); font-weight: 700; }
-.race-table td.fewer::after {
-  content: ' ·';
-  color: var(--c-sorted);
+.rr-cell.rr-headline { padding-bottom: 7px; }
+.rr-label.rr-headline,
+.rr-cell.rr-headline {
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 5px;
+  padding-bottom: 7px;
 }
-.race-table tr.headline td { border-bottom: 1px solid var(--border); padding-bottom: 7px; }
-.race-table tr.headline td:first-child { color: var(--text-dim); font-weight: 600; }
+.rr-cell.rr-headline .rr-track { height: 9px; }
+.rr-cell.rr-headline .rr-num { font-size: 13px; }
 
 .race-footnote {
   margin: 9px 0 0;
