@@ -60,5 +60,56 @@ export async function run() {
       `quickselect altered the multiset of values on [${arr}]`);
   }
 
+
+  /* ── handed an unsorted list, a sorted search must sort it first,
+        get the right answer anyway, and own up to the cost ── */
+  const needsSorting = SEARCHING.filter((a) => a.needsSorted === true);
+  for (const algo of needsSorting) {
+    for (let trial = 0; trial < 12; trial++) {
+      const pool = new Set();
+      while (pool.size < 6 + Math.floor(Math.random() * 20)) pool.add(1 + Math.floor(Math.random() * 99));
+      const unsorted = [...pool];                       // insertion order, not sorted
+      const present = unsorted[Math.floor(Math.random() * unsorted.length)];
+
+      for (const target of [present, 1000]) {
+        const frames = record(algo.run({ array: unsorted.slice(), target, presorted: false }), 300000);
+        const last = frames.at(-1);
+
+        // it has to actually sort, visibly
+        check(frames.some((f) => f.phase === 'sorting'),
+          `${algo.id} was handed an unsorted list and never sorted it`);
+
+        // and still be right
+        const foundSomewhere = frames.some((f) => f.found !== undefined);
+        check(foundSomewhere === unsorted.includes(target),
+          `${algo.id} on an unsorted list: said ${foundSomewhere ? 'found' : 'absent'} for ${target}`);
+
+        // and the bill must add up
+        const st = last.stats || {};
+        check(st.TOTAL === st['sorting cost'] + st['search cost'],
+          `${algo.id} reported a total of ${st.TOTAL} from ${st['sorting cost']} + ${st['search cost']}`);
+        check(st['sorting cost'] > 0, `${algo.id} claimed the sort was free`);
+      }
+    }
+  }
+
+  /* ── linear search must NOT sort: that is its whole advantage here ── */
+  {
+    const unsorted = [42, 7, 91, 3, 55, 18, 64, 29];
+    const frames = record(SEARCHING.find((a) => a.id === 'linear').run({ array: unsorted, target: 55, presorted: false }), 100000);
+    check(!frames.some((f) => f.phase === 'sorting'),
+      'linear search sorted the list — not needing it sorted is the entire point of this comparison');
+  }
+
+  /* ── on one lookup over a decent list, sorting should lose ── */
+  {
+    const unsorted = Array.from({ length: 40 }, (_, i) => ((i * 37) % 97) + 1);
+    const target = unsorted[30];
+    const binary = record(SEARCHING.find((a) => a.id === 'binary').run({ array: unsorted.slice(), target, presorted: false }), 300000).at(-1);
+    check(binary.stats.TOTAL > binary.stats['a linear scan'],
+      `for a single lookup over 40 items, binary + sort cost ${binary.stats.TOTAL} against a linear scan's ` +
+      `${binary.stats['a linear scan']} — sorting should not win here, and if it does the accounting is wrong`);
+  }
+
   return tally();
 }
