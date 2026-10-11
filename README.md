@@ -181,6 +181,7 @@ reading an ordinary implementation.
 ```
 start.command           double-click to run it
 serve.py                the local server (caching off, so reloads are honest)
+tests/                  node tests/run.mjs
 index.html              page shell
 css/style.css           all styling; colors are CSS variables at the top
 js/
@@ -199,6 +200,31 @@ js/
     puzzle-view.js        N-Queens, Sudoku, Hanoi
   algorithms/           the algorithms themselves, grouped by category
 ```
+
+## Tests
+
+```sh
+node tests/run.mjs            # everything
+node tests/run.mjs sorting    # one suite
+```
+
+No framework and nothing to install — the project runs on a browser and
+python3, and the tests keep it that way.
+
+Nearly every algorithm is checked against an **independent implementation of
+the same problem**, usually a different algorithm entirely, so a shared
+misunderstanding cannot pass both: Tarjan's components against Kosaraju's,
+the Graham scan against gift wrapping, Dijkstra against plain repeated
+relaxation, Huffman against every valid set of code lengths.
+
+Where an algorithm reconstructs an answer from a table, that answer is
+re-costed from scratch — a DP can compute the right number and then walk the
+table back wrongly, and the headline figure will not give it away. So the
+coin list has to add up to the amount *and* use the fewest coins, and the rod
+cuts have to consume the whole rod *and* total the claimed value.
+
+If you add an algorithm, the `catalogue` suite will tell you if it is wired
+up wrongly before you ever click on it.
 
 ## Adding an algorithm
 
