@@ -134,9 +134,14 @@ body {
   border-radius: 8px;
   cursor: pointer;
   font-size: 14px;
-  transition: background .12s, color .12s;
+  transition: background .12s, color .12s, transform .12s;
 }
-.icon-btn:hover { background: var(--bg-hover); color: var(--text); }
+.icon-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text);
+  transform: translateY(-1px);
+}
+.icon-btn:active { transform: translateY(0); }
 
 /* ───────────────────────── layout ───────────────────────── */
 
@@ -454,6 +459,7 @@ body.racing .race-foot { display: block; }
   color: #fff;
   width: 38px;
   font-size: 13px;
+  box-shadow: 0 2px 10px color-mix(in srgb, var(--accent) 40%, transparent);
 }
 .ctrl.play:hover:not(:disabled) { filter: brightness(1.12); background: var(--accent); color: #fff; }
 
@@ -566,7 +572,12 @@ input[type="range"]::-moz-range-thumb {
   cursor: pointer;
   transition: background .1s, color .1s;
 }
-.btn:hover { background: var(--bg-hover); color: var(--text); }
+.btn:hover {
+  background: var(--bg-hover);
+  color: var(--text);
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+}
+.btn:active { transform: scale(.97); }
 .btn.on {
   background: color-mix(in srgb, var(--accent) 20%, transparent);
   border-color: var(--accent);
