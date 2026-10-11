@@ -303,6 +303,11 @@ function select(id) {
   $('pick-block').hidden = !algo.pick;
   $('info-pick').textContent = algo.pick || '';
   document.documentElement.style.setProperty('--cat-current', categoryColor(algo));
+  // The headline number people actually compare algorithms by.
+  const bigO = $('big-o');
+  bigO.textContent = algo.cost?.avg ?? '';
+  bigO.title = algo.cost?.avg ? `typical running time (worst case ${algo.cost.worst})` : '';
+
   renderCost(algo.cost);
   renderPseudocode(algo.pseudocode);
 

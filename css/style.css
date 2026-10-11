@@ -333,9 +333,24 @@ body {
 
 .stage-head h2 {
   margin: 0;
+  display: inline;
   font-size: 17px;
   font-weight: 600;
   letter-spacing: -0.01em;
+}
+
+.big-o {
+  display: inline-block;
+  margin-left: 9px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  font-family: var(--mono);
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-dim);
+  vertical-align: 3px;
 }
 
 .note {
