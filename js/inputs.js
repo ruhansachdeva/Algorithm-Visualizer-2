@@ -1,3 +1,5 @@
+import { random } from './rng.js';
+
 /* ============================================================
    Input controls
    ------------------------------------------------------------
@@ -102,7 +104,7 @@ export const SUDOKU = {
 /* ───────────────────── graph building ──────────────────── */
 
 const NAMES = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-const randInt = (lo, hi) => lo + Math.floor(Math.random() * (hi - lo + 1));
+const randInt = (lo, hi) => lo + Math.floor(random() * (hi - lo + 1));
 
 /**
  * Build a random graph matching what the algorithm needs.
@@ -121,7 +123,7 @@ export function buildGraph(n, spec, opts = {}) {
     if (!spec.weighted) return 1;
     // Negative weights only ever point "forward", so no negative cycle
     // can form by accident — the toggle below adds one deliberately.
-    if (spec.negative && a < b && Math.random() < 0.3) return -randInt(1, 4);
+    if (spec.negative && a < b && random() < 0.3) return -randInt(1, 4);
     return randInt(1, 9);
   };
   const add = (a, b) => {
@@ -136,7 +138,7 @@ export function buildGraph(n, spec, opts = {}) {
   for (let i = 1; i < n; i++) {
     const parent = randInt(0, i - 1);
     // In a DAG, arrows must always run from the lower index to the higher.
-    spec.acyclic || spec.negative ? add(parent, i) : (Math.random() < 0.5 ? add(parent, i) : add(i, parent));
+    spec.acyclic || spec.negative ? add(parent, i) : (random() < 0.5 ? add(parent, i) : add(i, parent));
   }
 
   // a few extra edges for interest
@@ -211,10 +213,10 @@ function sprinkleWeights() {
   g.weights = new Uint8Array(g.cols * g.rows).fill(1);
   const blobs = Math.max(3, Math.floor((g.cols * g.rows) / 160));
   for (let b = 0; b < blobs; b++) {
-    const cx = Math.floor(Math.random() * g.cols);
-    const cy = Math.floor(Math.random() * g.rows);
-    const r = 2 + Math.floor(Math.random() * 3);
-    const w = 3 + Math.floor(Math.random() * 7);
+    const cx = Math.floor(random() * g.cols);
+    const cy = Math.floor(random() * g.rows);
+    const r = 2 + Math.floor(random() * 3);
+    const w = 3 + Math.floor(random() * 7);
     for (let y = cy - r; y <= cy + r; y++) {
       for (let x = cx - r; x <= cx + r; x++) {
         if (x < 0 || y < 0 || x >= g.cols || y >= g.rows) continue;
@@ -233,14 +235,14 @@ function randomWalls(density = 0.28) {
   g.walls = new Set();
   for (let i = 0; i < g.cols * g.rows; i++) {
     if (i === g.start || i === g.goal) continue;
-    if (Math.random() < density) g.walls.add(i);
+    if (random() < density) g.walls.add(i);
   }
 }
 
 /* ───────────────────── data generators ─────────────────── */
 
 function randomInts(n, max = 99) {
-  return Array.from({ length: n }, () => 1 + Math.floor(Math.random() * max));
+  return Array.from({ length: n }, () => 1 + Math.floor(random() * max));
 }
 
 /** Build an array with a particular shape, so you can see how shape affects cost. */
@@ -254,19 +256,19 @@ export function generateArray(n, dist) {
       // sorted, then a handful of neighbouring swaps
       const a = randomInts(n).sort((x, y) => x - y);
       for (let k = 0; k < Math.max(1, Math.floor(n / 12)); k++) {
-        const i = Math.floor(Math.random() * (n - 1));
+        const i = Math.floor(random() * (n - 1));
         [a[i], a[i + 1]] = [a[i + 1], a[i]];
       }
       return a;
     }
     case 'few': {
       const pool = randomInts(Math.max(2, Math.ceil(n / 8)));
-      return Array.from({ length: n }, () => pool[Math.floor(Math.random() * pool.length)]);
+      return Array.from({ length: n }, () => pool[Math.floor(random() * pool.length)]);
     }
     case 'signed':
       // Negative values exercise the zero line in the chart, and several
       // sorts have subtly different behaviour once values go below zero.
-      return Array.from({ length: n }, () => Math.floor(Math.random() * 120) - 55);
+      return Array.from({ length: n }, () => Math.floor(random() * 120) - 55);
     case 'sawtooth': {
       const period = Math.max(3, Math.floor(n / 4));
       return Array.from({ length: n }, (_, i) => 5 + (i % period) * Math.floor(90 / period));
@@ -392,7 +394,7 @@ const builders = {
       if (needsSorted) s.data = [...new Set(s.data)].sort((a, b) => a - b);
     };
     if (!s.data || (needsSorted && s.data.some((v, i, a) => i && a[i - 1] > v))) regen();
-    if (s.target === null || s.target === undefined) s.target = s.data[Math.floor(Math.random() * s.data.length)];
+    if (s.target === null || s.target === undefined) s.target = s.data[Math.floor(random() * s.data.length)];
 
     const targetField = numberBox('target', s.target, (v) => { s.target = v; rerun(); });
 
@@ -400,13 +402,13 @@ const builders = {
       slider('items', { min: 4, max: 90, value: s.size }, (v) => { s.size = v; regen(); rerun(); }),
       targetField,
       button('pick one that exists', () => {
-        s.target = s.data[Math.floor(Math.random() * s.data.length)];
+        s.target = s.data[Math.floor(random() * s.data.length)];
         targetField.querySelector('input').value = s.target;
         rerun();
       }),
       button('pick a missing one', () => {
         let t = 0;
-        do { t = 1 + Math.floor(Math.random() * 99); } while (s.data.includes(t));
+        do { t = 1 + Math.floor(random() * 99); } while (s.data.includes(t));
         s.target = t;
         targetField.querySelector('input').value = t;
         rerun();
@@ -431,8 +433,8 @@ const builders = {
       button("Euclid's own example", () => { s.a = 1071; s.b = 462; rebuild(box, algo, rerun); }),
       button('coprime pair', () => { s.a = 1234; s.b = 4567; rebuild(box, algo, rerun); }),
       button('random', () => {
-        s.a = 2 + Math.floor(Math.random() * 9000);
-        s.b = 2 + Math.floor(Math.random() * 9000);
+        s.a = 2 + Math.floor(random() * 9000);
+        s.b = 2 + Math.floor(random() * 9000);
         rebuild(box, algo, rerun);
       }),
     );
@@ -463,20 +465,20 @@ const builders = {
       if (s.shape === 'circle') {
         // Points near a circle: almost every one ends up on the hull.
         s.data = Array.from({ length: n }, (_, i) => {
-          const a = (i / n) * Math.PI * 2 + Math.random() * 0.1;
-          const r = 0.42 + Math.random() * 0.04;
+          const a = (i / n) * Math.PI * 2 + random() * 0.1;
+          const r = 0.42 + random() * 0.04;
           return { x: 0.5 + r * Math.cos(a), y: 0.5 + r * Math.sin(a) };
         });
       } else if (s.shape === 'clustered') {
         // A tight blob: a handful of corners and a lot of interior.
         s.data = Array.from({ length: n }, () => ({
-          x: 0.5 + (Math.random() - 0.5) * 0.45 * Math.random(),
-          y: 0.5 + (Math.random() - 0.5) * 0.45 * Math.random(),
+          x: 0.5 + (random() - 0.5) * 0.45 * random(),
+          y: 0.5 + (random() - 0.5) * 0.45 * random(),
         }));
       } else {
         s.data = Array.from({ length: n }, () => ({
-          x: 0.06 + Math.random() * 0.88,
-          y: 0.06 + Math.random() * 0.88,
+          x: 0.06 + random() * 0.88,
+          y: 0.06 + random() * 0.88,
         }));
       }
     };
@@ -751,11 +753,11 @@ const builders = {
     const d = state.dp;
     box.append(
       slider('values', { min: 4, max: 24, value: d.signed.length }, (v) => {
-        d.signed = Array.from({ length: v }, () => Math.floor(Math.random() * 24) - 11);
+        d.signed = Array.from({ length: v }, () => Math.floor(random() * 24) - 11);
         rerun();
       }),
       button('new values', () => {
-        d.signed = d.signed.map(() => Math.floor(Math.random() * 24) - 11);
+        d.signed = d.signed.map(() => Math.floor(random() * 24) - 11);
         rerun();
       }),
       button('textbook example', () => { d.signed = [-2, 1, -3, 4, -1, 2, 1, -5, 4]; rebuild(box, algo, rerun); }),
@@ -771,11 +773,11 @@ const builders = {
     const d = state.dp;
     box.append(
       slider('values', { min: 4, max: 20, value: d.array.length }, (v) => {
-        d.array = Array.from({ length: v }, () => 1 + Math.floor(Math.random() * 40));
+        d.array = Array.from({ length: v }, () => 1 + Math.floor(random() * 40));
         rerun();
       }),
       button('new values', () => {
-        d.array = d.array.map(() => 1 + Math.floor(Math.random() * 40));
+        d.array = d.array.map(() => 1 + Math.floor(random() * 40));
         rerun();
       }),
     );
@@ -819,7 +821,7 @@ const builders = {
       numsField,
       slider('target', { min: 1, max: 40, value: d.target }, (v) => { d.target = v; rerun(); }),
       button('new numbers', () => {
-        d.numbers = Array.from({ length: 6 }, () => 1 + Math.floor(Math.random() * 15));
+        d.numbers = Array.from({ length: 6 }, () => 1 + Math.floor(random() * 15));
         rebuild(box, algo, rerun);
       }),
     );
@@ -852,8 +854,8 @@ const builders = {
       button('classic example', () => { d.dims = [10, 30, 5, 60]; rebuild(box, algo, rerun); }),
       button('textbook chain', () => { d.dims = [30, 35, 15, 5, 10, 20, 25]; rebuild(box, algo, rerun); }),
       button('random', () => {
-        const k = 4 + Math.floor(Math.random() * 3);
-        d.dims = Array.from({ length: k }, () => 5 * (1 + Math.floor(Math.random() * 12)));
+        const k = 4 + Math.floor(random() * 3);
+        d.dims = Array.from({ length: k }, () => 5 * (1 + Math.floor(random() * 12)));
         rebuild(box, algo, rerun);
       }),
       shapes,
@@ -866,16 +868,16 @@ const builders = {
     box.append(
       slider('items', { min: 2, max: 7, value: d.items.length }, (v) => {
         d.items = Array.from({ length: v }, () => ({
-          v: 10 * (1 + Math.floor(Math.random() * 12)),
-          w: 1 + Math.floor(Math.random() * 7),
+          v: 10 * (1 + Math.floor(random() * 12)),
+          w: 1 + Math.floor(random() * 7),
         }));
         rerun();
       }),
       slider('bag capacity', { min: 3, max: 22, value: d.capacity }, (v) => { d.capacity = v; rerun(); }),
       button('new items', () => {
         d.items = d.items.map(() => ({
-          v: 10 * (1 + Math.floor(Math.random() * 12)),
-          w: 1 + Math.floor(Math.random() * 7),
+          v: 10 * (1 + Math.floor(random() * 12)),
+          w: 1 + Math.floor(random() * 7),
         }));
         rerun();
       }),
@@ -894,10 +896,10 @@ const builders = {
     const regen = () => {
       // distinct values, so "the" node for a key is unambiguous
       const pool = new Set();
-      while (pool.size < s.size) pool.add(1 + Math.floor(Math.random() * 99));
+      while (pool.size < s.size) pool.add(1 + Math.floor(random() * 99));
       s.values = [...pool];
       if (s.sorted) s.values.sort((a, b) => a - b);
-      s.target = s.values[Math.floor(Math.random() * s.values.length)];
+      s.target = s.values[Math.floor(random() * s.values.length)];
     };
     if (!s.values || s.values.length !== s.size) regen();
 

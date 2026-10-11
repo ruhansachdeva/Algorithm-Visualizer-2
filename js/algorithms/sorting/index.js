@@ -8,6 +8,8 @@
    actual algorithm — the yields are the only extra.
    ============================================================ */
 
+import { random } from '../../rng.js';
+
 import { newState, snap, swapIn, allSorted } from '../util.js';
 const base = { view: 'array', input: 'array' };
 
@@ -989,7 +991,7 @@ const bogo = {
         return;
       }
       for (let i = arr.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
+        const j = Math.floor(random() * (i + 1));
         swapIn(arr, i, j, st);
       }
       yield snap(arr, st, { line: 1, note: `shuffle #${rounds} — not sorted` });
