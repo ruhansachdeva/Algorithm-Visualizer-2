@@ -15,6 +15,7 @@ const SUITES = [
   './pathfinding.test.mjs',
   './graphs.test.mjs',
   './trees.test.mjs',
+  './segment.test.mjs',
   './dp.test.mjs',
   './strings.test.mjs',
   './backtracking.test.mjs',
