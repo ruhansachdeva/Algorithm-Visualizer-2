@@ -233,13 +233,21 @@ function toggleCategory(id) {
 }
 
 function applyCollapsed() {
+  // Filtering, or selecting something inside a folded category, has to
+  // open it — otherwise the thing you asked for is invisible.
+  const forceOpen = new Set();
+  if (dom.filter.value.trim()) {
+    for (const head of dom.list.querySelectorAll('.cat-head')) forceOpen.add(head.dataset.cat);
+  }
+  if (current?.category) forceOpen.add(current.category);
+
   for (const head of dom.list.querySelectorAll('.cat-head')) {
-    const shut = collapsed.has(head.dataset.cat);
+    const shut = collapsed.has(head.dataset.cat) && !forceOpen.has(head.dataset.cat);
     head.classList.toggle('shut', shut);
     head.setAttribute('aria-expanded', String(!shut));
   }
   for (const group of dom.list.querySelectorAll('.cat-group')) {
-    group.classList.toggle('shut', collapsed.has(group.dataset.cat));
+    group.classList.toggle('shut', collapsed.has(group.dataset.cat) && !forceOpen.has(group.dataset.cat));
   }
 }
 
