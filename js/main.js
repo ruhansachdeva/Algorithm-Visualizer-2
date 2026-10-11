@@ -170,8 +170,19 @@ function buildSidebar(filterText = '') {
     for (const algo of matches) {
       const b = document.createElement('button');
       b.className = 'algo-btn' + (algo.id === current?.id ? ' active' : '');
-      b.textContent = algo.name;
       b.dataset.id = algo.id;
+
+      // Show WHERE the search matched, rather than leaving you to spot it.
+      const hit = q ? algo.name.toLowerCase().indexOf(q) : -1;
+      if (hit === -1) {
+        b.textContent = algo.name;
+      } else {
+        b.append(
+          algo.name.slice(0, hit),
+          Object.assign(document.createElement('mark'), { textContent: algo.name.slice(hit, hit + q.length) }),
+          algo.name.slice(hit + q.length),
+        );
+      }
       b.addEventListener('click', () => select(algo.id));
       dom.list.append(b);
     }

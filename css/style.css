@@ -200,6 +200,13 @@ body {
   transition: background .1s, color .1s;
 }
 .algo-btn:hover { background: var(--bg-hover); color: var(--text); }
+
+.algo-btn mark {
+  background: color-mix(in srgb, var(--c-compare) 32%, transparent);
+  color: var(--text);
+  border-radius: 2px;
+  padding: 0 1px;
+}
 .algo-btn.active {
   background: color-mix(in srgb, var(--accent) 18%, transparent);
   color: var(--text);
