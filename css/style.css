@@ -176,6 +176,41 @@ body {
   color: var(--cat, var(--text-faint));
 }
 
+.cat-head {
+  width: 100%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  border-radius: 7px;
+  transition: background .12s;
+}
+.cat-head:hover { background: var(--bg-hover); }
+
+.chevron {
+  display: inline-block;
+  font-size: 13px;
+  line-height: 1;
+  opacity: .55;
+  transform: rotate(90deg);
+  transition: transform .16s ease;
+}
+.cat-head.shut .chevron { transform: rotate(0deg); }
+
+.cat-group {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows .18s ease, opacity .14s ease;
+}
+.cat-group > * { min-height: 0; }
+.cat-group.shut {
+  grid-template-rows: 0fr;
+  opacity: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
 .cat-icon {
   display: inline-flex;
   color: var(--cat, var(--text-faint));

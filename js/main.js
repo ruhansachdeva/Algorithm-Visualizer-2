@@ -161,8 +161,11 @@ function buildSidebar(filterText = '') {
     );
     if (!matches.length) continue;
 
-    const head = document.createElement('div');
+    const head = document.createElement('button');
     head.className = 'cat-head';
+    head.type = 'button';
+    head.dataset.cat = cat.id;
+    head.setAttribute('aria-expanded', 'true');
     head.style.setProperty('--cat', cat.color || 'var(--text-faint)');
 
     const mark = document.createElement('span');
@@ -170,11 +173,19 @@ function buildSidebar(filterText = '') {
     mark.append(icon(cat.id));
 
     head.append(
+      Object.assign(document.createElement('span'), { className: 'chevron', textContent: '\u203A' }),
       mark,
       Object.assign(document.createElement('span'), { className: 'cat-name', textContent: cat.name }),
       Object.assign(document.createElement('span'), { className: 'cat-count', textContent: matches.length }),
     );
-    dom.list.append(head);
+
+    // Each category's rows live in their own group so one click hides them.
+    const group = document.createElement('div');
+    group.className = 'cat-group';
+    group.dataset.cat = cat.id;
+
+    head.addEventListener('click', () => toggleCategory(cat.id));
+    dom.list.append(head, group);
 
     for (const algo of matches) {
       const b = document.createElement('button');
@@ -194,14 +205,35 @@ function buildSidebar(filterText = '') {
         );
       }
       b.addEventListener('click', () => select(algo.id));
-      dom.list.append(b);
+      group.append(b);
     }
   }
+
+  applyCollapsed();
 
   if (!dom.list.children.length) {
     dom.list.append(Object.assign(document.createElement('div'), {
       className: 'cat-head', textContent: 'no matches',
     }));
+  }
+}
+
+/** Categories the user has folded away. */
+const collapsed = new Set();
+
+function toggleCategory(id) {
+  if (collapsed.has(id)) collapsed.delete(id); else collapsed.add(id);
+  applyCollapsed();
+}
+
+function applyCollapsed() {
+  for (const head of dom.list.querySelectorAll('.cat-head')) {
+    const shut = collapsed.has(head.dataset.cat);
+    head.classList.toggle('shut', shut);
+    head.setAttribute('aria-expanded', String(!shut));
+  }
+  for (const group of dom.list.querySelectorAll('.cat-group')) {
+    group.classList.toggle('shut', collapsed.has(group.dataset.cat));
   }
 }
 
