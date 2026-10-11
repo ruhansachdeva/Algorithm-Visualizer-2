@@ -12,6 +12,7 @@
 
 import { QUEENS_LEGEND, SUDOKU_LEGEND, HANOI_LEGEND } from '../../views/puzzle-view.js';
 import { ENUMERATE } from './enumerate.js';
+import { COLORING } from './coloring.js';
 
 /* ───────────────────────── N-Queens ────────────────────── */
 
@@ -235,4 +236,4 @@ const hanoi = {
   },
 };
 
-export const BACKTRACKING = [...ENUMERATE, queens, sudoku, hanoi];
+export const BACKTRACKING = [...ENUMERATE, queens, ...COLORING, sudoku, hanoi];

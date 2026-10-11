@@ -953,6 +953,14 @@ const builders = {
       }),
     );
 
+    if (algo.id === 'bt-coloring') {
+      g.colors = g.colors ?? 3;
+      box.append(slider('colours allowed', { min: 1, max: 6, value: g.colors }, (v) => { g.colors = v; rerun(); }));
+      const hint = el('span', 'field', 'drop to 2 and most graphs become impossible — that is the bipartite question');
+      hint.style.opacity = '.7';
+      box.append(hint);
+    }
+
     if (spec.negative) {
       box.append(button(g.negativeCycle ? 'negative cycle: on' : 'negative cycle: off', (b) => {
         g.negativeCycle = !g.negativeCycle;
@@ -966,7 +974,7 @@ const builders = {
       box.append(hint);
     }
 
-    return () => g.cache;
+    return () => ({ ...g.cache, colors: g.colors ?? 3 });
   },
 
   /* ── an unsorted list and a rank to find ── */
