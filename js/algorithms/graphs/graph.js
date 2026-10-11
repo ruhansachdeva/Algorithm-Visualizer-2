@@ -789,4 +789,182 @@ const floydWarshall = {
 
 const fmt = (v) => (Number.isFinite(v) ? v : '∞');
 
-export const GRAPHS = [bfs, dfs, dijkstra, bellmanFord, floydWarshall, topo, unionFind, kruskal, prim, cycleDetect, tarjan];
+
+/* ─────────────────── Bipartite check ───────────────────── */
+
+const bipartite = {
+  ...base,
+  id: 'graph-bipartite',
+  name: 'Bipartite Check',
+  legend: [
+    ['--c-swap',    'being examined'],
+    ['--c-compare', 'edge being checked'],
+    ['#4da3ff',     'one side'],
+    ['#3ddc84',     'the other side'],
+  ],
+  about: 'Can the nodes be split into two groups with every edge crossing between them? Colour the start node, colour all its neighbours the opposite shade, and keep going. If you ever reach a node that already has the colour you were about to give it, the answer is no. A graph is bipartite exactly when it contains no odd-length cycle, which is what that clash detects.',
+  cost: { best: 'O(1)', avg: 'O(V + E)', worst: 'O(V + E)', space: 'O(V)', stable: '—' },
+  graph: { directed: false, weighted: false },
+  pseudocode: [
+    'colour the first node side 0',
+    'walk outwards, giving each neighbour the opposite side',
+    'if a neighbour already has the SAME side as the node you came from,',
+    '  the graph is not bipartite — you have found an odd cycle',
+    'if every node gets a side with no clash, it is bipartite',
+  ],
+  *run(inp) {
+    const n = inp.nodes.length;
+    const ns = blankN(inp), es = blankE(inp);
+    const side = new Int32Array(n).fill(-1);
+    let checked = 0;
+
+    const f = (extra) => gf(inp, ns, es, {
+      nodeGroup: Array.from(side),
+      nodeLabel: Array.from(side, (v) => (v < 0 ? '' : v === 0 ? 'A' : 'B')),
+      stats: { coloured: side.filter((v) => v >= 0).length, 'edges checked': checked },
+      ...extra,
+    });
+
+    yield f({ line: 0, note: 'nothing coloured yet' });
+
+    for (let start = 0; start < n; start++) {
+      if (side[start] !== -1) continue;
+
+      side[start] = 0;
+      const queue = [start];
+      ns[start] = N.CURRENT;
+      yield f({ line: 0, note: `${nm(inp, start)} goes on side A` });
+
+      while (queue.length) {
+        const u = queue.shift();
+        ns[u] = N.VISITED;
+
+        for (const { to, edge } of inp.adj[u]) {
+          checked++;
+          es[edge] = E.LOOKING;
+
+          if (side[to] === -1) {
+            side[to] = 1 - side[u];
+            queue.push(to);
+            es[edge] = E.CHOSEN;
+            yield f({ line: 1, note: `${nm(inp, to)} must go on side ${side[to] === 0 ? 'A' : 'B'}, opposite ${nm(inp, u)}` });
+          } else if (side[to] === side[u]) {
+            es[edge] = E.REJECTED;
+            ns[u] = N.CURRENT; ns[to] = N.CURRENT;
+            yield f({
+              line: 2,
+              note: `${nm(inp, u)} and ${nm(inp, to)} are joined but both on side ${side[u] === 0 ? 'A' : 'B'} — not bipartite`,
+            });
+            yield f({ line: 3, note: 'that clash means there is an odd-length cycle somewhere in the graph' });
+            return;
+          } else {
+            es[edge] = E.IDLE;
+          }
+        }
+      }
+    }
+
+    for (let i = 0; i < n; i++) ns[i] = N.DONE;
+    const a = side.filter((v) => v === 0).length;
+    yield f({ line: 4, note: `bipartite — ${a} node(s) on side A, ${n - a} on side B, and every edge crosses between them` });
+  },
+};
+
+/* ──────────── Bridges and articulation points ──────────── */
+
+const bridges = {
+  ...base,
+  id: 'graph-bridges',
+  name: 'Bridges & Cut Vertices',
+  legend: [
+    ['--c-swap',    'being explored'],
+    ['--c-compare', 'edge being followed'],
+    ['--c-sorted',  'safe to remove'],
+    ['--c-path',    'tree edge'],
+  ],
+  about: 'Which single edge, or single node, would break the network in two if it failed? A depth-first search records when each node was first reached, and the earliest node reachable from its subtree without using the edge it came in by. If a child cannot reach anything above its parent, the connecting edge is a bridge and the parent is a cut vertex. This is how you find single points of failure in a network.',
+  cost: { best: 'O(V + E)', avg: 'O(V + E)', worst: 'O(V + E)', space: 'O(V)', stable: '—' },
+  graph: { directed: false, weighted: false },
+  pseudocode: [
+    'depth-first search, numbering nodes as you first reach them',
+    'low[u] = earliest node reachable from u\'s subtree',
+    'after exploring a child v:',
+    '  if low[v] > disc[u], the edge u-v is a bridge',
+    '  if low[v] >= disc[u], u is a cut vertex (unless it is the root)',
+    'the root is a cut vertex when it has more than one child',
+  ],
+  *run(inp) {
+    const n = inp.nodes.length;
+    const ns = blankN(inp), es = blankE(inp);
+    const disc = new Int32Array(n).fill(-1);
+    const low = new Int32Array(n).fill(-1);
+    const cut = new Uint8Array(n);
+    let timer = 0;
+    const foundBridges = [];
+
+    const labels = () => Array.from({ length: n }, (_, i) => (disc[i] < 0 ? '' : `${disc[i]}/${low[i]}`));
+    const f = (extra) => gf(inp, ns, es, {
+      nodeLabel: labels(),
+      stats: { visited: timer, bridges: foundBridges.length, 'cut vertices': cut.reduce((a, b) => a + b, 0) },
+      ...extra,
+    });
+
+    yield f({ line: 0, note: 'numbering nodes as the search first reaches them' });
+
+    function* dfs(u, parentEdge) {
+      disc[u] = low[u] = timer++;
+      ns[u] = N.CURRENT;
+      yield f({ line: 0, note: `${nm(inp, u)} first reached at time ${disc[u]}` });
+
+      let children = 0;
+
+      for (const { to, edge } of inp.adj[u]) {
+        if (edge === parentEdge) continue;   // never walk straight back
+
+        if (disc[to] === -1) {
+          children++;
+          es[edge] = E.CHOSEN;
+          yield f({ line: 1, note: `going deeper to ${nm(inp, to)}` });
+          yield* dfs(to, edge);
+
+          low[u] = Math.min(low[u], low[to]);
+          yield f({ line: 2, note: `back at ${nm(inp, u)}: its subtree reaches as far back as ${low[u]}` });
+
+          if (low[to] > disc[u]) {
+            foundBridges.push(`${nm(inp, u)}-${nm(inp, to)}`);
+            es[edge] = E.REJECTED;
+            yield f({ line: 3, note: `${nm(inp, to)}'s subtree cannot reach above ${nm(inp, u)} — so ${nm(inp, u)}-${nm(inp, to)} is a bridge` });
+          }
+          if (disc[u] !== 0 && low[to] >= disc[u] && !cut[u]) {
+            cut[u] = 1;
+            yield f({ line: 4, note: `removing ${nm(inp, u)} would cut ${nm(inp, to)}'s side loose — it is a cut vertex` });
+          }
+        } else {
+          // an edge back to an already-seen node: a shortcut upwards
+          low[u] = Math.min(low[u], disc[to]);
+          es[edge] = E.LOOKING;
+          yield f({ line: 1, note: `${nm(inp, to)} was already seen at time ${disc[to]} — a way back up` });
+          es[edge] = E.IDLE;
+        }
+      }
+
+      if (disc[u] === 0 && children > 1 && !cut[u]) {
+        cut[u] = 1;
+        yield f({ line: 5, note: `${nm(inp, u)} is the root with ${children} separate branches — removing it splits them apart` });
+      }
+
+      ns[u] = cut[u] ? N.CURRENT : N.DONE;
+    }
+
+    for (let i = 0; i < n; i++) if (disc[i] === -1) yield* dfs(i, -1);
+
+    for (let i = 0; i < n; i++) ns[i] = cut[i] ? N.CURRENT : N.DONE;
+    yield f({
+      note: foundBridges.length || cut.some(Boolean)
+        ? `${foundBridges.length} bridge(s)${foundBridges.length ? `: ${foundBridges.join(', ')}` : ''} and ${cut.reduce((a, b) => a + b, 0)} cut vertex(es) — each one is a single point of failure`
+        : 'no bridges and no cut vertices — every part of this network has a second route',
+    });
+  },
+};
+
+export const GRAPHS = [bfs, dfs, dijkstra, bellmanFord, floydWarshall, topo, unionFind, kruskal, prim, cycleDetect, bipartite, bridges, tarjan];
