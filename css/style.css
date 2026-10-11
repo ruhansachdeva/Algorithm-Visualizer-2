@@ -166,21 +166,29 @@ body {
 
 .cat-head {
   display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 8px;
-  padding: 12px 8px 5px;
+  align-items: center;
+  gap: 7px;
+  padding: 13px 8px 6px;
   font-size: 10.5px;
   font-weight: 700;
-  letter-spacing: 0.09em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--text-faint);
+  color: var(--cat, var(--text-faint));
 }
+
+.cat-icon {
+  display: inline-flex;
+  color: var(--cat, var(--text-faint));
+  opacity: .9;
+}
+
+.cat-name { flex: 1; }
 
 .cat-count {
   font-weight: 600;
   letter-spacing: 0;
-  color: var(--c-idle);
+  color: var(--cat, var(--c-idle));
+  opacity: .6;
   font-variant-numeric: tabular-nums;
 }
 
@@ -208,10 +216,10 @@ body {
   padding: 0 1px;
 }
 .algo-btn.active {
-  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  background: color-mix(in srgb, var(--cat, var(--accent)) 18%, transparent);
   color: var(--text);
   font-weight: 500;
-  box-shadow: inset 2px 0 0 var(--accent);
+  box-shadow: inset 2px 0 0 var(--cat, var(--accent));
 }
 
 /* ───────────────────────── stage ───────────────────────── */

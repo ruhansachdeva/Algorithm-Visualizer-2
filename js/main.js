@@ -10,6 +10,7 @@
 
 import { CATEGORIES, VIEWS, HIT_TEST, findAlgo, ALL } from './registry.js';
 import { buildInputs, pointer, fitGridRows } from './inputs.js';
+import { icon } from './icons.js';
 import { Player, record } from './engine/player.js';
 import { palette, fitCanvas } from './views/draw.js';
 import { barAt } from './views/array-view.js';
@@ -162,8 +163,15 @@ function buildSidebar(filterText = '') {
 
     const head = document.createElement('div');
     head.className = 'cat-head';
+    head.style.setProperty('--cat', cat.color || 'var(--text-faint)');
+
+    const mark = document.createElement('span');
+    mark.className = 'cat-icon';
+    mark.append(icon(cat.id));
+
     head.append(
-      Object.assign(document.createElement('span'), { textContent: cat.name }),
+      mark,
+      Object.assign(document.createElement('span'), { className: 'cat-name', textContent: cat.name }),
       Object.assign(document.createElement('span'), { className: 'cat-count', textContent: matches.length }),
     );
     dom.list.append(head);
@@ -172,6 +180,7 @@ function buildSidebar(filterText = '') {
       const b = document.createElement('button');
       b.className = 'algo-btn' + (algo.id === current?.id ? ' active' : '');
       b.dataset.id = algo.id;
+      b.style.setProperty('--cat', cat.color || 'var(--accent)');
 
       // Show WHERE the search matched, rather than leaving you to spot it.
       const hit = q ? algo.name.toLowerCase().indexOf(q) : -1;
