@@ -94,7 +94,7 @@ move the start and goal.
 | Searching | 8 | linear, **binary**★, quickselect, jump, exponential, interpolation, ternary, Fibonacci |
 | Pathfinding | 6 | BFS, DFS, Dijkstra, **A\***★, greedy best-first, bidirectional BFS |
 | Graphs | 13 | BFS, DFS, **Dijkstra**★, Bellman-Ford, Floyd-Warshall, topological sort, union-find, Kruskal, Prim, cycle detection, bipartite check, bridges & cut vertices, Tarjan's SCC |
-| Trees | 13 | BST insert/search/delete, in/pre/post/level-order traversal, **AVL**★, **red-black**★, binary heap, trie insert/search, Huffman coding |
+| Trees | 15 | BST insert/search/delete, in/pre/post/level-order traversal, **AVL**★, **red-black**★, binary heap, **segment tree build/query**, trie insert/search, Huffman coding |
 | Dynamic programming | 10 | Fibonacci, Kadane, LIS, coin change, subset sum, knapsack, rod cutting, **LCS**★, edit distance, matrix chain order |
 | String matching | 6 | naive, **KMP**★, Z-algorithm, **Boyer-Moore**★, Rabin-Karp, longest palindrome |
 | Backtracking | 6 | subsets, permutations, N-Queens, graph colouring, Sudoku, **Towers of Hanoi**★ |
