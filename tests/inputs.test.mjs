@@ -57,6 +57,17 @@ export async function run() {
       // A frame with no note is a frame the explanation panel renders blank.
       const blank = frames.findIndex((f) => !f.note);
       check(blank === -1, `${algo.id} frame ${blank} has no note`);
+
+      // Every frame highlights a step in the panel, so the index has to
+      // point at one that exists: -1 is the sentinel for "highlight
+      // nothing", used by the sorts on their final frame. Editing a
+      // pseudocode list without renumbering the yields would otherwise
+      // silently highlight the wrong line, or none at all.
+      const steps = algo.pseudocode?.length ?? 0;
+      const stray = frames.findIndex((f) => f.line != null &&
+        (!Number.isInteger(f.line) || f.line < -1 || f.line >= steps));
+      check(stray === -1,
+        `${algo.id} frame ${stray} highlights step ${frames[stray]?.line}, but it has ${steps} steps`);
     }
 
     /* ── the controls must survive being used ── */
