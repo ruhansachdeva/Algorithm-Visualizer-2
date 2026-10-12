@@ -156,6 +156,47 @@ body {
   grid-template-columns: 232px minmax(0, 1fr) 280px;
 }
 
+/* ──────────────────── page tabs (shared) ─────────────────── */
+
+/* The three pages — Visualize, Learn, Practice — share this bar, so a
+   change here changes all of them. Lives in style.css rather than any
+   one page's stylesheet for that reason. */
+
+.pagenav {
+  display: flex;
+  gap: 2px;
+  margin-right: 6px;
+  padding: 2px;
+  background: var(--bg-sunken);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.pagenav-link {
+  padding: 5px 11px;
+  border-radius: 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-dim);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background .12s, color .12s;
+}
+
+.pagenav-link:hover { background: var(--bg-hover); color: var(--text); }
+
+.pagenav-link.is-here {
+  background: var(--accent);
+  color: #fff;
+  cursor: default;
+}
+
+:root[data-theme="light"] .pagenav-link.is-here { color: #fff; }
+
+@media (max-width: 560px) {
+  .pagenav-link { padding: 5px 8px; font-size: 12px; }
+}
+
 /* ───────────────────────── sidebar ───────────────────────── */
 
 .sidebar {

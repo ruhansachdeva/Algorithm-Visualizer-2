@@ -1,0 +1,436 @@
+/* ============================================================
+   The Learn page.
+
+   A reading layout, not an app layout: the visualizer fills the viewport
+   and never scrolls, this is a document with a picker beside it. The
+   measure is capped at around 76 characters because the paragraphs here
+   are the point of the page, and a 1,600-pixel line is unreadable.
+   ============================================================ */
+
+.page-learn { display: flex; flex-direction: column; min-height: 100vh; }
+
+.learn-layout {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 232px minmax(0, 1fr);
+}
+
+.page-learn .sidebar {
+  position: sticky;
+  top: 0;
+  align-self: start;
+  max-height: 100vh;
+  overflow: auto;
+}
+
+/* ───────────────────── the picker ───────────────────── */
+
+.algo-group { padding: 0 0 8px; }
+
+.algo-cat {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 12px 5px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.algo-cat svg { width: 13px; height: 13px; flex: none; }
+
+.algo-item {
+  display: block;
+  padding: 6px 12px 6px 30px;
+  font-size: 13px;
+  color: var(--text-dim);
+  text-decoration: none;
+  border-left: 2px solid transparent;
+}
+
+.algo-item:hover { background: var(--bg-hover); color: var(--text); }
+
+.algo-item.active {
+  background: var(--bg-hover);
+  border-left-color: var(--accent);
+  color: var(--text);
+  font-weight: 600;
+}
+
+.algo-none { padding: 14px 12px; font-size: 12.5px; color: var(--text-faint); }
+
+/* ───────────────────── the document ───────────────────── */
+
+.doc {
+  min-width: 0;
+  padding: 26px 32px 80px;
+  overflow-x: hidden;
+}
+
+.doc > * { max-width: 76ch; }
+
+.doc-head { margin-bottom: 30px; }
+
+.doc-crumb {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.doc-head h2 {
+  margin: 4px 0 10px;
+  font-size: 27px;
+  line-height: 1.2;
+  letter-spacing: -.02em;
+}
+
+.doc-about {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.62;
+  color: var(--text-dim);
+}
+
+.doc-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+
+.doc-btn {
+  padding: 7px 13px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-dim);
+  text-decoration: none;
+}
+
+.doc-btn:hover { background: var(--bg-hover); color: var(--text); }
+
+.doc-btn.primary {
+  background: var(--accent);
+  border-color: transparent;
+  color: #fff;
+}
+
+.doc-btn.primary:hover { filter: brightness(1.08); color: #fff; }
+
+.doc-sec { margin-top: 38px; }
+
+.doc-sec > h3 {
+  margin: 0 0 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.doc-lede {
+  margin: 0 0 16px;
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--text-dim);
+}
+
+.doc-fine {
+  margin: 10px 0 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text-faint);
+}
+
+/* ───────────────────── cost ───────────────────── */
+
+.cost-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
+  gap: 10px;
+}
+
+.cost-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 11px 13px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.cost-key {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.cost-val { font-family: var(--mono); font-size: 15px; font-weight: 600; }
+.cost-shape { font-size: 11.5px; color: var(--text-dim); }
+
+.cost-why {
+  grid-column: 1 / -1;
+  padding: 15px 17px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius);
+}
+
+.cost-why h4 {
+  margin: 0 0 7px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.cost-why p { margin: 0; font-size: 14px; line-height: 1.68; }
+
+/* ───────────────────── the chart ───────────────────── */
+
+.chart-card {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.chart-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 10px 13px;
+  border-bottom: 1px solid var(--border);
+}
+
+.chart-toolbar-right { display: flex; gap: 6px; margin-left: auto; }
+
+.chart-key {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  color: var(--text-dim);
+}
+
+.key-line { width: 18px; height: 0; border-top-width: 2px; border-top-style: solid; }
+.key-line.measured  { border-color: var(--c-cursor); }
+.key-line.predicted { border-top-style: dashed; border-color: var(--c-compare); }
+
+.chip {
+  padding: 4px 9px;
+  background: var(--bg-sunken);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font: inherit;
+  font-size: 11.5px;
+  color: var(--text-dim);
+  cursor: pointer;
+}
+
+.chip:hover { background: var(--bg-hover); color: var(--text); }
+.chip[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+
+.chart-holder { position: relative; height: 288px; }
+.chart-holder canvas { display: block; width: 100%; height: 100%; }
+
+.chart-busy {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  text-align: center;
+  background: var(--bg-panel);
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.chart-note {
+  margin: 0;
+  padding: 11px 13px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-sunken);
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text-faint);
+}
+
+/* ───────────────────── verdict ───────────────────── */
+
+.verdict {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 14px;
+  padding: 13px 15px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.verdict p { margin: 0; font-size: 13.5px; line-height: 1.65; }
+
+.verdict-badge {
+  flex: none;
+  padding: 3px 9px;
+  border-radius: 20px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.verdict[data-kind="agrees"] { border-left: 3px solid var(--c-sorted); }
+.verdict[data-kind="agrees"] .verdict-badge { background: var(--c-sorted); color: #06240f; }
+.verdict[data-kind="under"]  { border-left: 3px solid var(--c-cursor); }
+.verdict[data-kind="under"]  .verdict-badge { background: var(--c-cursor); color: #04203c; }
+.verdict[data-kind="over"]   { border-left: 3px solid var(--c-compare); }
+.verdict[data-kind="over"]   .verdict-badge { background: var(--c-compare); color: #3a2a00; }
+.verdict[data-kind="unknown"]{ border-left: 3px solid var(--border); }
+.verdict[data-kind="unknown"] .verdict-badge { background: var(--bg-hover); color: var(--text-dim); }
+
+/* ───────────────────── doubling ───────────────────── */
+
+.doubling { margin-top: 20px; }
+
+.doubling h4 {
+  margin: 0 0 8px;
+  font-size: 13.5px;
+  font-weight: 700;
+}
+
+.doubling p { margin: 0 0 12px; font-size: 13.5px; line-height: 1.65; color: var(--text-dim); }
+
+.growth-table {
+  border-collapse: collapse;
+  font-family: var(--mono);
+  font-size: 12.5px;
+}
+
+.growth-table th,
+.growth-table td {
+  padding: 5px 16px 5px 0;
+  text-align: right;
+  border-bottom: 1px solid var(--border);
+}
+
+.growth-table th {
+  font-family: var(--sans);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.growth-table td:last-child { color: var(--text-dim); }
+
+/* ───────────────────── when to use ───────────────────── */
+
+.when-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+}
+
+.when-card {
+  padding: 14px 16px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.when-card.good { border-left: 3px solid var(--c-sorted); }
+.when-card.bad  { border-left: 3px solid var(--c-swap); }
+
+.when-card h4 {
+  margin: 0 0 7px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.when-card p { margin: 0; font-size: 13.5px; line-height: 1.66; }
+
+.pick-note {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 12px 15px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.pick-note p { margin: 0; font-size: 13.5px; line-height: 1.65; color: var(--text-dim); }
+.pick-note .pick-star { flex: none; }
+
+/* ───────────────────── pros and cons ───────────────────── */
+
+.pc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 12px 22px;
+}
+
+.pc-head {
+  margin: 0 0 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.pc-head.good { color: var(--c-sorted); }
+.pc-head.bad  { color: var(--c-swap); }
+
+.pc-col ul { margin: 0; padding-left: 17px; }
+
+.pc-col li {
+  margin-bottom: 9px;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--text-dim);
+}
+
+.pc-col li::marker { color: var(--text-faint); }
+
+/* ───────────────────── narrow screens ───────────────────── */
+
+@media (max-width: 860px) {
+  .learn-layout { grid-template-columns: 1fr; }
+
+  /* The picker becomes a strip across the top rather than a column:
+     a 232px sidebar on a phone leaves no room for the reading. */
+  .page-learn .sidebar {
+    position: static;
+    max-height: 212px;
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .doc { padding: 20px 16px 64px; }
+  .doc-head h2 { font-size: 23px; }
+  .chart-holder { height: 240px; }
+}
+
+@media (max-width: 420px) {
+  .doc { padding: 16px 13px 56px; }
+  .doc-head h2 { font-size: 21px; }
+  .chart-holder { height: 210px; }
+  .cost-grid { grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); }
+}

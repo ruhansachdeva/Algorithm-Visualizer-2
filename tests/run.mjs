@@ -12,6 +12,7 @@ const SUITES = [
   './catalogue.test.mjs',
   './seeding.test.mjs',
   './inputs.test.mjs',
+  './complexity.test.mjs',
   './sorting.test.mjs',
   './searching.test.mjs',
   './pathfinding.test.mjs',
