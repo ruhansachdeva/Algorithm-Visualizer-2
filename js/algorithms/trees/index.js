@@ -85,7 +85,15 @@ const insert = {
 
     for (const v of values) {
       const states = clear(t);
-      yield tf(t, states, { line: 1, note: `inserting ${v}`, stats: { nodes: t.nodes.length, comparisons, height: heightOf(t, t.root) } });
+      // Which step this frame is really on depends on the tree: "start at
+      // the root" is a lie when there is no root yet, and the next frame
+      // takes the empty-tree branch on step 1. Every other tree insert
+      // here announces on its own first step; this was the odd one out.
+      yield tf(t, states, {
+        line: t.root === null ? 0 : 1,
+        note: `inserting ${v}`,
+        stats: { nodes: t.nodes.length, comparisons, height: heightOf(t, t.root) },
+      });
 
       if (t.root === null) {
         t.root = addNode(t, v);

@@ -185,7 +185,12 @@ const binary = {
         yield f(arr, target, { range: [Math.min(lo, hi), hi], dead: outside(arr.length, lo, hi), line: 5, note: `${target} > ${arr[mid]} — everything left of ${mid} is out`, stats: { steps, 'window size': Math.max(0, hi - lo + 1) } });
       }
     }
-    yield f(arr, target, { dead: arr.map((_, i) => i), line: 6, note: `the window is empty — ${target} is not in the list`, stats: { steps, 'window size': 0 } });
+    // Step 1, the loop test: the window emptying is exactly `lo <= hi`
+    // failing, which is what ends the search. It used to say 6, which is
+    // one past the end of a six-step list, so a search that found nothing
+    // highlighted nothing — the one moment the reader most wants the
+    // explanation for.
+    yield f(arr, target, { dead: arr.map((_, i) => i), line: 1, note: `the window is empty — ${target} is not in the list`, stats: { steps, 'window size': 0 } });
   },
 };
 
