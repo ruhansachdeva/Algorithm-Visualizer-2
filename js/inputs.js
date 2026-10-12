@@ -438,6 +438,612 @@ const builders = {
     return () => ({ array: s.data, target: s.target, presorted: s.presorted });
   },
 
+  /* ── two whole numbers ── */
+  'two-numbers'(box, algo, rerun) {
+    const s = state.pair;
+    box.append(
+      numberBox('a', s.a, (v) => { s.a = Math.max(1, Math.min(99999, v | 0)); rerun(); }),
+      numberBox('b', s.b, (v) => { s.b = Math.max(0, Math.min(99999, v | 0)); rerun(); }),
+      button("Euclid's own example", () => { s.a = 1071; s.b = 462; rebuild(box, algo, rerun); }),
+      button('coprime pair', () => { s.a = 1234; s.b = 4567; rebuild(box, algo, rerun); }),
+      button('random', () => {
+        reseed();
+        s.a = 2 + Math.floor(random() * 9000);
+        s.b = 2 + Math.floor(random() * 9000);
+        rebuild(box, algo, rerun);
+      }),
+    );
+    return () => ({ a: s.a, b: s.b });
+  },
+
+  /* ── base, exponent, modulus ── */
+  power(box, algo, rerun) {
+    const s = state.power;
+    box.append(
+      numberBox('base', s.base, (v) => { s.base = Math.max(1, Math.min(999, v | 0)); rerun(); }),
+      slider('exponent', { min: 1, max: 255, value: s.exp }, (v) => { s.exp = v; rerun(); }),
+      button('prime modulus', () => { s.mod = 1000000007; rebuild(box, algo, rerun); }),
+      button('small modulus', () => { s.mod = 1000; rebuild(box, algo, rerun); }),
+    );
+    const hint = el('span', 'field', `working mod ${s.mod} — a bigger exponent costs one more step each time it doubles`);
+    hint.style.opacity = '.7';
+    box.append(hint);
+    return () => ({ base: s.base, exp: s.exp, mod: s.mod });
+  },
+
+  /* ── a cloud of 2D points ── */
+  points(box, algo, rerun) {
+    const s = state.points;
+
+    const make = () => {
+      const n = s.n;
+      if (s.shape === 'circle') {
+        // Points near a circle: almost every one ends up on the hull.
+        s.data = Array.from({ length: n }, (_, i) => {
+          const a = (i / n) * Math.PI * 2 + random() * 0.1;
+          const r = 0.42 + random() * 0.04;
+          return { x: 0.5 + r * Math.cos(a), y: 0.5 + r * Math.sin(a) };
+        });
+      } else if (s.shape === 'clustered') {
+        // A tight blob: a handful of corners and a lot of interior.
+        s.data = Array.from({ length: n }, () => ({
+          x: 0.5 + (random() - 0.5) * 0.45 * random(),
+          y: 0.5 + (random() - 0.5) * 0.45 * random(),
+        }));
+      } else {
+        s.data = Array.from({ length: n }, () => ({
+          x: 0.06 + random() * 0.88,
+          y: 0.06 + random() * 0.88,
+        }));
+      }
+    };
+    if (!s.data || s.data.length !== s.n) make();
+
+    box.append(
+      slider('points', { min: 3, max: 90, value: s.n }, (v) => { s.n = v; make(); rerun(); }),
+      button('new points', () => { reseed(); make(); rerun(); }),
+    );
+    for (const [key, name] of [['scattered', 'scattered'], ['clustered', 'clustered'], ['circle', 'near a circle']]) {
+      box.append(button(name, () => { s.shape = key; make(); rebuild(box, algo, rerun); }, { active: s.shape === key }));
+    }
+    const hint = el('span', 'field', 'on a circle almost every point is a corner; in a cluster almost none are');
+    hint.style.opacity = '.7';
+    box.append(hint);
+
+    return () => ({ points: s.data });
+  },
+
+  /* ── an upper limit, for sieves ── */
+  sieve(box, algo, rerun) {
+    const s = state.sieve;
+    box.append(
+      slider('up to', { min: 10, max: 400, value: s.limit, step: 10 }, (v) => { s.limit = v; rerun(); }),
+    );
+    const hint = el('span', 'field', 'watch the multiples of 2 go, then 3, then 5 — by 11 there is almost nothing left to cross out');
+    hint.style.opacity = '.7';
+    box.append(hint);
+    return () => ({ limit: s.limit });
+  },
+
+  /* ── one string to search inside ── */
+  palindrome(box, algo, rerun) {
+    const s = state.palindrome;
+    const f = field('text');
+    const input = el('input');
+    input.type = 'text';
+    input.style.width = '260px';
+    input.value = s.text;
+    input.addEventListener('input', () => { s.text = input.value.toUpperCase().slice(0, 34); input.value = s.text; rerun(); });
+    f.append(input);
+    box.append(
+      f,
+      button('odd-length answer', () => { s.text = 'BANANARAMA'; rebuild(box, algo, rerun); }),
+      button('even-length answer', () => { s.text = 'FORGEEKSSKEEGFOR'; rebuild(box, algo, rerun); }),
+      button('no palindrome', () => { s.text = 'ABCDEFG'; rebuild(box, algo, rerun); }),
+    );
+    const hint = el('span', 'field', 'even-length answers need a centre that sits between two characters');
+    hint.style.opacity = '.7';
+    box.append(hint);
+    return () => ({ text: s.text });
+  },
+
+  /* ── a short text to compress ── */
+  huffman(box, algo, rerun) {
+    const s = state.huffman;
+    const f = field('text');
+    const input = el('input');
+    input.type = 'text';
+    input.style.width = '280px';
+    input.value = s.text;
+    input.addEventListener('input', () => { s.text = input.value.slice(0, 60); input.value = s.text; rerun(); });
+    f.append(input);
+
+    box.append(
+      f,
+      button('ABRACADABRA', () => { s.text = 'ABRACADABRA'; rebuild(box, algo, rerun); }),
+      button('lopsided', () => { s.text = 'AAAAAAAAAAAAAAAABBBBCCDE'; rebuild(box, algo, rerun); }),
+      button('all equal', () => { s.text = 'ABCDEFGH'; rebuild(box, algo, rerun); }),
+    );
+    const hint = el('span', 'field', 'lopsided letter counts compress well; equal counts barely compress at all');
+    hint.style.opacity = '.7';
+    box.append(hint);
+    return () => ({ text: s.text });
+  },
+
+  /* ── a list of words, for tries ── */
+  words(box, algo, rerun) {
+    const s = state.words;
+    const wantsTarget = algo.id === 'trie-search';
+
+    const listField = field('words');
+    const listInput = el('input');
+    listInput.type = 'text';
+    listInput.style.width = '300px';
+    listInput.value = s.list;
+    listInput.addEventListener('input', () => { s.list = listInput.value; rerun(); });
+    listField.append(listInput);
+    box.append(listField);
+
+    if (wantsTarget) {
+      const tf = field('look up');
+      const ti = el('input');
+      ti.type = 'text';
+      ti.style.width = '110px';
+      ti.value = s.target;
+      ti.addEventListener('input', () => { s.target = ti.value.toUpperCase(); ti.value = s.target; rerun(); });
+      tf.append(ti);
+      box.append(tf);
+    }
+
+    box.append(
+      button('shared prefixes', () => { s.list = 'CAT, CAR, CARD, CARE, CARGO, CAT'; s.target = 'CAR'; rebuild(box, algo, rerun); }),
+      button('nothing in common', () => { s.list = 'APPLE, BANANA, CHERRY, DATE'; s.target = 'BANANA'; rebuild(box, algo, rerun); }),
+    );
+
+    if (wantsTarget) {
+      const hint = el('span', 'field', 'try a word that is only a prefix — "CAR" when CARD is stored');
+      hint.style.opacity = '.7';
+      box.append(hint);
+    }
+
+    return () => ({
+      words: parseWords(s.list),
+      target: (s.target || '').toUpperCase(),
+    });
+  },
+
+  /* ── text + pattern, for string matching ── */
+  string(box, algo, rerun) {
+    const s = state.string;
+    const textBox = (labelText, key, width) => {
+      const f = field(labelText);
+      const input = el('input');
+      input.type = 'text';
+      input.value = s[key];
+      if (width) input.style.width = width;
+      input.addEventListener('input', () => {
+        s[key] = input.value.toUpperCase().slice(0, key === 'text' ? 46 : 12);
+        input.value = s[key];
+        rerun();
+      });
+      f.append(input);
+      return f;
+    };
+
+    box.append(
+      textBox('text', 'text', '280px'),
+      textBox('pattern', 'pattern', '110px'),
+      button('worst case for naive', () => {
+        s.text = 'AAAAAAAAAAAAAAAAAAAAAAAA';
+        s.pattern = 'AAAAB';
+        rebuild(box, algo, rerun);
+      }),
+      button('long skips for Boyer-Moore', () => {
+        s.text = 'THE QUICK BROWN FOX JUMPS OVER A DOG';
+        s.pattern = 'JUMPS';
+        rebuild(box, algo, rerun);
+      }),
+    );
+    const hint = el('span', 'field', 'run the same text through all four and compare the comparison counts');
+    hint.style.opacity = '.7';
+    box.append(hint);
+    return () => ({ text: s.text, pattern: s.pattern });
+  },
+
+  /* ── N-Queens ── */
+  queens(box, algo, rerun) {
+    const s = state.queens;
+    box.append(
+      slider('board size', { min: 4, max: 12, value: s.n }, (v) => { s.n = v; rerun(); }),
+      button(s.findAll ? 'find: every solution' : 'find: first solution', (b) => {
+        s.findAll = !s.findAll;
+        b.textContent = s.findAll ? 'find: every solution' : 'find: first solution';
+        b.classList.toggle('on', s.findAll);
+        rerun();
+      }, { active: s.findAll }),
+    );
+    const hint = el('span', 'field', 'there is no solution for a 2×2 or 3×3 board — try it');
+    hint.style.opacity = '.7';
+    box.append(hint);
+    return () => ({ n: s.n, findAll: s.findAll });
+  },
+
+  /* ── Sudoku ── */
+  sudoku(box, algo, rerun) {
+    const s = state.sudoku;
+    for (const [key, name] of [['easy', 'easy'], ['medium', 'medium'], ['hard', 'hard (lots of backtracking)']]) {
+      box.append(button(name, () => { s.which = key; rebuild(box, algo, rerun); }, { active: s.which === key }));
+    }
+    return () => ({ puzzle: SUDOKU[s.which] });
+  },
+
+  /* ── a small set to enumerate over ── */
+  enumerate(box, algo, rerun) {
+    const s = state.enumerate;
+    // Permutations blow up far faster than subsets, so they get a tighter cap.
+    const max = algo.id === 'bt-permutations' ? 6 : 9;
+    if (s.n > max) s.n = max;
+
+    box.append(
+      slider('items', { min: 1, max, value: s.n }, (v) => { s.n = v; rerun(); }),
+    );
+    const total = algo.id === 'bt-permutations'
+      ? Array.from({ length: s.n }, (_, i) => i + 1).reduce((a, b) => a * b, 1)
+      : 2 ** s.n;
+    const hint = el('span', 'field',
+      `${s.n} items → ${total.toLocaleString()} ${algo.id === 'bt-permutations' ? 'orderings' : 'subsets'}` +
+      (algo.id === 'bt-permutations' ? ' · capped at 6 because 10 items is over three million' : ''));
+    hint.style.opacity = '.7';
+    box.append(hint);
+
+    return () => ({ values: Array.from({ length: s.n }, (_, i) => i + 1) });
+  },
+
+  /* ── Towers of Hanoi ── */
+  hanoi(box, algo, rerun) {
+    const s = state.hanoi;
+    box.append(slider('disks', { min: 1, max: 10, value: s.n }, (v) => { s.n = v; rerun(); }));
+    const hint = el('span', 'field', 'every extra disk doubles the number of moves');
+    hint.style.opacity = '.7';
+    box.append(hint);
+    return () => ({ n: s.n });
+  },
+
+  /* ── dynamic programming inputs ── */
+
+  'dp-n'(box, algo, rerun) {
+    const d = state.dp;
+    box.append(slider('n', { min: 2, max: 40, value: d.n }, (v) => { d.n = v; rerun(); }));
+    return () => ({ n: d.n });
+  },
+
+  'dp-two-strings'(box, algo, rerun) {
+    const d = state.dp;
+    const textBox = (labelText, key) => {
+      const f = field(labelText);
+      const input = el('input');
+      input.type = 'text';
+      input.value = d[key];
+      input.addEventListener('input', () => {
+        d[key] = input.value.toUpperCase().slice(0, 14);
+        input.value = d[key];
+        rerun();
+      });
+      f.append(input);
+      return f;
+    };
+    box.append(
+      textBox('string A', 'a'),
+      textBox('string B', 'b'),
+      button('KITTEN / SITTING', () => { d.a = 'KITTEN'; d.b = 'SITTING'; rebuild(box, algo, rerun); }),
+      button('ALGORITHM / LOGARITHM', () => { d.a = 'ALGORITHM'; d.b = 'LOGARITHM'; rebuild(box, algo, rerun); }),
+    );
+    return () => ({ a: d.a || 'A', b: d.b || 'B' });
+  },
+
+  'dp-rod'(box, algo, rerun) {
+    const d = state.dp;
+    const f = field('piece prices');
+    const input = el('input');
+    input.type = 'text';
+    input.style.width = '220px';
+    input.value = d.prices.join(', ');
+    input.addEventListener('input', () => {
+      const parsed = input.value.split(/[^0-9]+/).map(Number).filter((x) => x >= 0);
+      if (parsed.length) { d.prices = parsed.slice(0, 10); rerun(); }
+    });
+    f.append(input);
+    box.append(
+      f,
+      button('textbook prices', () => { d.prices = [1, 5, 8, 9, 10, 17, 17, 20]; rebuild(box, algo, rerun); }),
+      button('whole rod wins', () => { d.prices = [1, 2, 3, 4, 50]; rebuild(box, algo, rerun); }),
+    );
+    const hint = el('span', 'field', 'the nth number is what a piece of length n sells for');
+    hint.style.opacity = '.7';
+    box.append(hint);
+    return () => ({ prices: d.prices });
+  },
+
+  'dp-signed'(box, algo, rerun) {
+    const d = state.dp;
+    box.append(
+      slider('values', { min: 4, max: 24, value: d.signed.length }, (v) => {
+        d.signed = Array.from({ length: v }, () => Math.floor(random() * 24) - 11);
+        rerun();
+      }),
+      button('new values', () => {
+        reseed();
+        d.signed = d.signed.map(() => Math.floor(random() * 24) - 11);
+        rerun();
+      }),
+      button('textbook example', () => { d.signed = [-2, 1, -3, 4, -1, 2, 1, -5, 4]; rebuild(box, algo, rerun); }),
+      button('all negative', () => { d.signed = [-8, -3, -6, -2, -5, -4]; rebuild(box, algo, rerun); }),
+    );
+    const hint = el('span', 'field', 'with every value negative the answer is the single least-bad one');
+    hint.style.opacity = '.7';
+    box.append(hint);
+    return () => ({ array: d.signed });
+  },
+
+  'dp-array'(box, algo, rerun) {
+    const d = state.dp;
+    box.append(
+      slider('values', { min: 4, max: 20, value: d.array.length }, (v) => {
+        d.array = Array.from({ length: v }, () => 1 + Math.floor(random() * 40));
+        rerun();
+      }),
+      button('new values', () => {
+        reseed();
+        d.array = d.array.map(() => 1 + Math.floor(random() * 40));
+        rerun();
+      }),
+    );
+    return () => ({ array: d.array });
+  },
+
+  'dp-coins'(box, algo, rerun) {
+    const d = state.dp;
+    const coinsField = field('coins');
+    const input = el('input');
+    input.type = 'text';
+    input.value = d.coins.join(', ');
+    input.addEventListener('input', () => {
+      const parsed = input.value.split(/[,\s]+/).map(Number).filter((x) => Number.isInteger(x) && x > 0);
+      if (parsed.length) { d.coins = parsed.slice(0, 6); rerun(); }
+    });
+    coinsField.append(input);
+
+    box.append(
+      coinsField,
+      slider('amount', { min: 1, max: 40, value: d.amount }, (v) => { d.amount = v; rerun(); }),
+      button('1, 3, 4 (greedy fails here)', () => { d.coins = [1, 3, 4]; d.amount = 6; rebuild(box, algo, rerun); }),
+      button('UK coins', () => { d.coins = [1, 2, 5, 10, 20]; d.amount = 33; rebuild(box, algo, rerun); }),
+    );
+    return () => ({ coins: d.coins, amount: d.amount });
+  },
+
+  'dp-subset'(box, algo, rerun) {
+    const d = state.dp;
+    const numsField = field('numbers');
+    const input = el('input');
+    input.type = 'text';
+    input.value = d.numbers.join(', ');
+    input.addEventListener('input', () => {
+      const parsed = input.value.split(/[,\s]+/).map(Number).filter((x) => Number.isInteger(x) && x > 0);
+      if (parsed.length) { d.numbers = parsed.slice(0, 8); rerun(); }
+    });
+    numsField.append(input);
+
+    box.append(
+      numsField,
+      slider('target', { min: 1, max: 40, value: d.target }, (v) => { d.target = v; rerun(); }),
+      button('new numbers', () => {
+        reseed();
+        d.numbers = Array.from({ length: 6 }, () => 1 + Math.floor(random() * 15));
+        rebuild(box, algo, rerun);
+      }),
+    );
+    return () => ({ numbers: d.numbers, target: d.target });
+  },
+
+  'dp-matrix'(box, algo, rerun) {
+    const d = state.dp;
+    const f = field('dimensions');
+    const input = el('input');
+    input.type = 'text';
+    input.style.width = '210px';
+    input.value = d.dims.join(' x ');
+    input.addEventListener('input', () => {
+      const parsed = input.value.split(/[^0-9]+/).map(Number).filter((x) => x > 0);
+      if (parsed.length >= 2) { d.dims = parsed.slice(0, 8); rerun(); }
+    });
+    f.append(input);
+
+    const shapes = el('span', 'field');
+    const describe = () => {
+      shapes.textContent = d.dims.slice(0, -1)
+        .map((_, i) => `A${i + 1}=${d.dims[i]}x${d.dims[i + 1]}`).join('  ');
+    };
+    describe();
+    shapes.style.opacity = '.7';
+
+    box.append(
+      f,
+      button('classic example', () => { d.dims = [10, 30, 5, 60]; rebuild(box, algo, rerun); }),
+      button('textbook chain', () => { d.dims = [30, 35, 15, 5, 10, 20, 25]; rebuild(box, algo, rerun); }),
+      button('random', () => {
+        reseed();
+        const k = 4 + Math.floor(random() * 3);
+        d.dims = Array.from({ length: k }, () => 5 * (1 + Math.floor(random() * 12)));
+        rebuild(box, algo, rerun);
+      }),
+      shapes,
+    );
+    return () => ({ dims: d.dims });
+  },
+
+  'dp-knapsack'(box, algo, rerun) {
+    const d = state.dp;
+    box.append(
+      slider('items', { min: 2, max: 7, value: d.items.length }, (v) => {
+        d.items = Array.from({ length: v }, () => ({
+          v: 10 * (1 + Math.floor(random() * 12)),
+          w: 1 + Math.floor(random() * 7),
+        }));
+        rerun();
+      }),
+      slider('bag capacity', { min: 3, max: 22, value: d.capacity }, (v) => { d.capacity = v; rerun(); }),
+      button('new items', () => {
+        reseed();
+        d.items = d.items.map(() => ({
+          v: 10 * (1 + Math.floor(random() * 12)),
+          w: 1 + Math.floor(random() * 7),
+        }));
+        rerun();
+      }),
+    );
+    const hint = el('span', 'field', 'each item is shown as value/weight');
+    hint.style.opacity = '.7';
+    box.append(hint);
+    return () => ({ items: d.items, capacity: d.capacity });
+  },
+
+  /* ── a list of values to build a tree from ── */
+  tree(box, algo, rerun) {
+    const s = state.tree;
+    const wantsTarget = algo.id === 'bst-search' || algo.id === 'bst-delete';
+
+    const regen = () => {
+      // distinct values, so "the" node for a key is unambiguous
+      const pool = new Set();
+      while (pool.size < s.size) pool.add(1 + Math.floor(random() * 99));
+      s.values = [...pool];
+      if (s.sorted) s.values.sort((a, b) => a - b);
+      s.target = s.values[Math.floor(random() * s.values.length)];
+    };
+    if (!s.values || s.values.length !== s.size) regen();
+
+    const targetField = wantsTarget
+      ? numberBox('target', s.target, (v) => { s.target = v; rerun(); })
+      : null;
+
+    box.append(
+      slider('values', { min: 3, max: 24, value: s.size }, (v) => { s.size = v; regen(); if (targetField) targetField.querySelector('input').value = s.target; rerun(); }),
+      button(s.sorted ? 'input: sorted' : 'input: shuffled', (b) => {
+        s.sorted = !s.sorted;
+        b.textContent = s.sorted ? 'input: sorted' : 'input: shuffled';
+        b.classList.toggle('on', s.sorted);
+        regen();
+        if (targetField) targetField.querySelector('input').value = s.target;
+        rerun();
+      }, { active: s.sorted }),
+      button('new values', () => { reseed(); regen(); if (targetField) targetField.querySelector('input').value = s.target; rerun(); }),
+    );
+    if (targetField) box.append(targetField);
+
+    const hint = el('span', 'field', s.sorted
+      ? 'sorted input is the worst case — compare BST Insert with AVL Insert on it'
+      : 'try "input: sorted" and compare BST Insert against AVL Insert');
+    hint.style.opacity = '.7';
+    box.append(hint);
+
+    return () => ({ values: s.values, target: s.target });
+  },
+
+  /* ── a list plus the range to ask about ── */
+  segment(box, algo, rerun) {
+    const s = state.segment;
+    const wantsRange = algo.id === 'segtree-query';
+
+    const regen = () => {
+      s.values = Array.from({ length: s.size }, () => 1 + Math.floor(random() * 20));
+    };
+    if (!s.values || s.values.length !== s.size) regen();
+
+    // The tree is built over indices 0..size-1, so a stale range from a
+    // longer list would ask for slots that no longer exist.
+    const clamp = () => {
+      s.from = Math.max(0, Math.min(s.from, s.size - 1));
+      s.to = Math.max(s.from, Math.min(s.to, s.size - 1));
+    };
+    clamp();
+
+    box.append(
+      slider('values', { min: 2, max: 16, value: s.size }, (v) => {
+        s.size = v;
+        regen();
+        clamp();
+        rebuild(box, algo, rerun);
+      }),
+      button('new values', () => { reseed(); regen(); rerun(); }),
+    );
+
+    if (wantsRange) {
+      box.append(
+        numberBox('from', s.from, (v) => { s.from = v; clamp(); rebuild(box, algo, rerun); }, { min: 0, max: s.size - 1 }),
+        numberBox('to', s.to, (v) => { s.to = v; clamp(); rebuild(box, algo, rerun); }, { min: 0, max: s.size - 1 }),
+      );
+      const hint = el('span', 'field', `summing indices ${s.from}..${s.to} — a wide range touches fewer nodes than you would guess`);
+      hint.style.opacity = '.7';
+      box.append(hint);
+    } else {
+      const hint = el('span', 'field', 'each parent stores the sum of its two children — build once, then switch to Range Query');
+      hint.style.opacity = '.7';
+      box.append(hint);
+    }
+
+    return () => ({ values: s.values, from: s.from, to: s.to });
+  },
+
+  /* ── node-and-edge graph ── */
+  graph(box, algo, rerun) {
+    const g = state.graph;
+    const spec = algo.graph || {};
+    // Different algorithms want different graph shapes, so the cached
+    // graph is keyed by the shape it was built for.
+    const key = JSON.stringify([spec, g.size, g.extra, g.negativeCycle]);
+
+    const regen = () => {
+      g.cache = buildGraph(g.size, spec, { extra: g.extra, negativeCycle: g.negativeCycle });
+      g.key = JSON.stringify([spec, g.size, g.extra, g.negativeCycle]);
+    };
+    if (!g.cache || g.key !== key) regen();
+
+    box.append(
+      slider('nodes', { min: 4, max: 16, value: g.size }, (v) => { g.size = v; regen(); rerun(); }),
+      slider('extra edges', { min: 0, max: 12, value: Math.round(g.extra * 10) }, (v) => { g.extra = v / 10; regen(); rerun(); }),
+      button('new graph', () => { reseed(); regen(); rerun(); }),
+      // Clearing the positions makes the view lay the graph out afresh.
+      button('re-layout', () => {
+        for (const node of g.cache.nodes) { delete node.x; delete node.y; }
+        rerun();
+      }),
+    );
+
+    if (algo.id === 'bt-coloring') {
+      g.colors = g.colors ?? 3;
+      box.append(slider('colours allowed', { min: 1, max: 6, value: g.colors }, (v) => { g.colors = v; rerun(); }));
+      const hint = el('span', 'field', 'drop to 2 and most graphs become impossible — that is the bipartite question');
+      hint.style.opacity = '.7';
+      box.append(hint);
+    }
+
+    if (spec.negative) {
+      box.append(button(g.negativeCycle ? 'negative cycle: on' : 'negative cycle: off', (b) => {
+        g.negativeCycle = !g.negativeCycle;
+        b.textContent = g.negativeCycle ? 'negative cycle: on' : 'negative cycle: off';
+        b.classList.toggle('on', g.negativeCycle);
+        regen();
+        rerun();
+      }, { active: g.negativeCycle }));
+      const hint = el('span', 'field', 'turn this on to watch the extra round catch a cycle that makes paths meaningless');
+      hint.style.opacity = '.7';
+      box.append(hint);
+    }
+
+    return () => ({ ...g.cache, colors: g.colors ?? 3 });
+  },
+
   /* ── an unsorted list and a rank to find ── */
   kth(box, algo, rerun) {
     const s = state.kth;
