@@ -7,7 +7,20 @@ number theory, geometry and maze generation.
 The successor to my terminal version, which had four algorithms and printed
 arrows under numbers.
 
-## Running it
+**[Open it live → ruhansachdeva.github.io/Algorithm-Visualizer-2](https://ruhansachdeva.github.io/Algorithm-Visualizer-2/)**
+
+Nothing to install, and it works on a phone. The live copy updates a minute
+or two after anything lands on `main`.
+
+Every view has a shareable link: the algorithm, the step you paused on and
+the random seed all travel in the URL, so whoever opens it sees exactly the
+run you were looking at — for example
+[`#graph-dijkstra@40`](https://ruhansachdeva.github.io/Algorithm-Visualizer-2/#graph-dijkstra@40).
+
+## Running it locally
+
+You only need this to change the code — to just use the visualizer, open the
+link above.
 
 There is no build step, no `npm install`, no toolchain — but it does need to
 be served over `http://`, not opened as a file.
