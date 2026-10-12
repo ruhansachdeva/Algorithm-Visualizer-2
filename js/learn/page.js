@@ -253,6 +253,11 @@ async function startMeasuring(algo) {
     return;
   }
 
+  if (s.flat) {
+    clearMeasurement(`the work did not change at all across these input sizes, so there is no curve to draw — “${s.label}” read ${s.values[0]} at every size`);
+    return;
+  }
+
   latest = { algo, m, s };
   showBusy(false);
   redraw();

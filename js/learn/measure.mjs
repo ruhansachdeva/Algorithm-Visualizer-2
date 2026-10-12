@@ -21,7 +21,7 @@
    ============================================================ */
 
 import { generateArray, buildGraph } from '../inputs.js';
-import { random, randInt, setSeed } from '../rng.js';
+import { random, randInt, setSeed, seedFrom } from '../rng.js';
 
 const ints = (n, max = 99) => Array.from({ length: n }, () => 1 + Math.floor(random() * max));
 const sorted = (n) => {
@@ -186,7 +186,9 @@ export function measure(algo, { seed = 'growth', cap = 400000, repeats = 3 } = {
     // sort can get a lucky pivot and dent the curve for no good reason.
     const runs = [];
     for (let r = 0; r < repeats; r++) {
-      setSeed(`${seed}:${algo.id}:${n}:${r}`);
+      // seedFrom, not the raw string: setSeed reads base-36 and would
+      // stop at the first colon, giving every size and repeat one seed.
+      setSeed(seedFrom(`${seed}:${algo.id}:${n}:${r}`));
       const input = inputFor(algo, n);
       try {
         runs.push(costOf(algo, input, cap));
@@ -302,11 +304,18 @@ export function primaryCounter(rows) {
  */
 export function series(m) {
   const key = primaryCounter(m.rows);
+  const values = m.rows.map((r) => (key ? r.counters?.[key] : r.steps) ?? null);
+  const real = values.filter((v) => v != null && Number.isFinite(v));
   return {
     key,
     label: key ?? 'steps',
-    values: m.rows.map((r) => (key ? r.counters?.[key] : r.steps) ?? null),
+    values,
     isStepFallback: !key,
+    // A measurement that does not move with the input has no shape, and
+    // must not be handed to the verdict: a flat line against O(V·E²)
+    // reads as "beat its worst case", when the truth is that the input
+    // generator never gave it anything to do.
+    flat: real.length > 1 && Math.min(...real) === Math.max(...real),
   };
 }
 

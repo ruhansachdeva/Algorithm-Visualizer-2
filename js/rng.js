@@ -41,6 +41,32 @@ export function setSeed(value) {
   return true;
 }
 
+/**
+ * Turn any label into a seed number.
+ *
+ * `setSeed` exists for seeds that travel in a URL, so it reads its
+ * argument as base-36 — which silently truncates anything else.
+ * parseInt('run:1', 36) and parseInt('run:2', 36) both stop at the colon
+ * and return the same number, so a caller building keys like
+ * `${name}:${size}:${attempt}` gets one seed for every key and does not
+ * find out. That cost this project an averaging loop that averaged three
+ * identical runs, and a question generator that produced the same three
+ * questions over and over.
+ *
+ * Use this for any seed that is a descriptive label rather than
+ * something a URL produced. FNV-1a: tiny, and spreads similar strings
+ * to unrelated numbers, which is the whole requirement.
+ */
+export function seedFrom(label) {
+  let h = 0x811c9dc5;
+  const str = String(label);
+  for (let i = 0; i < str.length; i++) {
+    h ^= str.charCodeAt(i);
+    h = Math.imul(h, 0x01000193);
+  }
+  return h >>> 0;
+}
+
 /** Start again from a fresh seed — what "new array" and friends do. */
 export function reseed() {
   seed = (Math.random() * 0xFFFFFFFF) >>> 0;

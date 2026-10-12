@@ -110,9 +110,14 @@ export async function run() {
       const s = mz.series(m);
       check(!/naive|avoided|would take|if we |brute/i.test(s.label),
         `${algo.id}: measuring "${s.label}", which is the cost of the alternative, not of this algorithm`);
+      // A counter that never moves is allowed — some algorithms really do
+      // the same amount of work whatever the input size here — but it must
+      // be *reported*, or the verdict reads a flat line against O(V·E²) as
+      // "beat its worst case" when nothing was measured at all.
       const vals = s.values.filter((v) => v != null);
-      check(Math.min(...vals) !== Math.max(...vals),
-        `${algo.id}: counter "${s.label}" is the same at every size, so it cannot show growth`);
+      const varies = Math.min(...vals) !== Math.max(...vals);
+      check(varies === !s.flat,
+        `${algo.id}: counter "${s.label}" ${varies ? 'does vary but was flagged flat' : 'is the same at every size but was not flagged flat'}`);
     }
 
     /* ── and the measurement must land on the known answer ── */
