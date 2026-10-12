@@ -227,7 +227,34 @@ function buildSidebar(filterText = '') {
       explain: () => openGuide(cat.id),
     });
     head.title = `${cat.name} — double-click for what this family is for`;
-    dom.list.append(head, group);
+    /* A visible way in, beside the heading.
+       Double-clicking the heading does the same thing, but a gesture
+       nobody can see is a gesture nobody uses — and whether a browser
+       calls two clicks a double click depends on the reader's own
+       system settings, which is not a good thing to hang a feature on.
+       One click here, no timing involved. */
+    const info = document.createElement('button');
+    info.type = 'button';
+    info.className = 'cat-info';
+    // The ring is a child, so the button keeps a comfortable hit area
+    // while the mark itself stays small.
+    info.append(Object.assign(document.createElement('span'), {
+      className: 'cat-info-mark', textContent: 'i',
+    }));
+    info.title = `What ${cat.name} is for, and when you would reach for it`;
+    info.setAttribute('aria-label', `What ${cat.name} is for`);
+    info.addEventListener('click', (e) => {
+      e.stopPropagation();          // not a fold
+      openGuide(cat.id);
+    });
+
+    // The heading is a <button>, so the info control cannot live inside
+    // it — they sit side by side in a row instead.
+    const row = document.createElement('div');
+    row.className = 'cat-row';
+    row.append(head, info);
+
+    dom.list.append(row, group);
 
     for (const algo of matches) {
       const b = document.createElement('button');
