@@ -111,36 +111,16 @@
     <div class="inputs" id="inputs"></div>
   </section>
 
-  <!-- ───────────────── right: explanation ───────────────── -->
+  <!-- ───────────────── right: what is happening now ─────────────────
+       Ordered by what is useful while something is running. The steps
+       list tracks the animation line by line, so it goes first; the
+       prose that used to sit above it has a whole page of its own now,
+       and pushed the live content below the fold. -->
   <aside class="info" aria-label="Explanation">
-    <div class="info-block pick-block" id="pick-block" hidden>
-      <h3><span class="pick-star">★</span> Worth reaching for</h3>
-      <p id="info-pick">—</p>
-    </div>
 
     <div class="info-block">
-      <h3>What it does</h3>
-      <p id="info-about">—</p>
-    </div>
-
-    <div class="info-block deep-dive">
-      <h3>
-        <button class="dive-toggle" id="dive-toggle" type="button" aria-expanded="false">
-          Pros &amp; cons<span class="dive-chevron">›</span>
-        </button>
-      </h3>
-      <div class="dive-body" id="dive-body" hidden></div>
-    </div>
-
-    <div class="info-block">
-      <h3>Cost</h3>
-      <table class="cost">
-        <tr><td>Best</td><td id="cost-best">—</td></tr>
-        <tr><td>Average</td><td id="cost-avg">—</td></tr>
-        <tr><td>Worst</td><td id="cost-worst">—</td></tr>
-        <tr><td>Memory</td><td id="cost-space">—</td></tr>
-        <tr><td>Stable</td><td id="cost-stable">—</td></tr>
-      </table>
+      <h3>Steps</h3>
+      <ol class="pseudo" id="pseudocode"></ol>
     </div>
 
     <div class="info-block">
@@ -149,9 +129,19 @@
     </div>
 
     <div class="info-block">
-      <h3>Steps</h3>
-      <ol class="pseudo" id="pseudocode"></ol>
+      <h3>Cost</h3>
+      <div class="cost-chips" id="cost-chips"></div>
     </div>
+
+    <div class="info-block about-block">
+      <h3>What it does</h3>
+      <p id="info-about">—</p>
+      <p class="pick-line" id="pick-line" hidden><span class="pick-star">★</span><span id="info-pick"></span></p>
+      <a class="info-more" id="info-more" href="learn.html">
+        Where the cost comes from, and when to use it →
+      </a>
+    </div>
+
   </aside>
 
 </main>

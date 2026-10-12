@@ -748,7 +748,7 @@ input[type="range"]::-moz-range-thumb {
 
 /* Each block is its own card, so the panel reads as a set of facts
    rather than one long column of text. */
-.info > .info-block:not(.pick-block) {
+.info > .info-block {
   background: var(--bg-panel);
   border: 1px solid var(--border);
   border-radius: 10px;
@@ -759,15 +759,6 @@ input[type="range"]::-moz-range-thumb {
 
 /* The recommendation sits in a tinted card so it reads as an opinion,
    not as more neutral reference text. */
-.pick-block {
-  background: color-mix(in srgb, var(--cat-current, var(--accent)) 11%, transparent);
-  border: 1px solid color-mix(in srgb, var(--cat-current, var(--accent)) 30%, transparent);
-  border-radius: 10px;
-  padding: 11px 13px;
-}
-.pick-block h3 { color: var(--cat-current, var(--accent)); }
-.pick-block p { color: var(--text); }
-.pick-block[hidden] { display: none; }
 
 .pick-star { font-size: 11px; }
 
@@ -785,19 +776,6 @@ input[type="range"]::-moz-range-thumb {
   font-size: 12.5px;
   line-height: 1.55;
   color: var(--text-dim);
-}
-
-.cost {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 12px;
-}
-.cost td { padding: 3px 0; }
-.cost td:first-child { color: var(--text-faint); }
-.cost td:last-child {
-  text-align: right;
-  font-family: var(--mono);
-  color: var(--text);
 }
 
 .stats { display: flex; flex-direction: column; gap: 3px; }
@@ -889,6 +867,7 @@ input[type="range"]::-moz-range-thumb {
   .stage { min-height: 46vh; flex-direction: column; }
 
   .topbar { height: 50px; padding: 0 12px; }
+  .topbar-right { gap: 7px; }
   .tagline { display: none; }
   .logo { width: 22px; height: 22px; }
   .algo-count { display: none; }
@@ -924,6 +903,15 @@ input[type="range"]::-moz-range-thumb {
   .rr-num { min-width: 44px; font-size: 11px; }
 
   .help-card { padding: 18px; }
+}
+
+@media (max-width: 560px) {
+  /* Three page tabs, three icon buttons and a title do not fit a phone.
+     The tabs say where you are and the icons do things, so the title is
+     what goes — the logo stays, and the page name is in the tab bar and
+     the browser's own title anyway. */
+  .brand-text { display: none; }
+  .brand { gap: 0; }
 }
 
 @media (max-width: 420px) {
@@ -1000,83 +988,6 @@ input[type="range"]::-moz-range-thumb {
 }
 
 /* ───────────────────── pros & cons ─────────────────────── */
-
-.deep-dive h3 { margin: 0; }
-
-.dive-toggle {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  width: 100%;
-  padding: 0;
-  background: none;
-  border: none;
-  cursor: pointer;
-  font: inherit;
-  font-size: 10.5px;
-  font-weight: 700;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
-  color: var(--text-faint);
-  transition: color .12s;
-}
-.dive-toggle:hover { color: var(--text-dim); }
-
-.dive-chevron {
-  font-size: 13px;
-  line-height: 1;
-  transition: transform .16s ease;
-}
-.dive-toggle[aria-expanded="true"] .dive-chevron { transform: rotate(90deg); }
-
-.dive-body { padding-top: 10px; }
-.dive-body[hidden] { display: none; }
-
-.dive-list {
-  margin: 0 0 11px;
-  padding: 0;
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.dive-list li {
-  display: flex;
-  gap: 7px;
-  font-size: 12px;
-  line-height: 1.5;
-  color: var(--text-dim);
-}
-
-.dive-list li::before {
-  flex: none;
-  font-weight: 700;
-  line-height: 1.45;
-}
-.dive-list.pros li::before { content: '+'; color: var(--c-sorted); }
-.dive-list.cons li::before { content: '\2212'; color: var(--c-swap); }
-
-.dive-when {
-  margin: 0 0 7px;
-  font-size: 12px;
-  line-height: 1.5;
-  color: var(--text-dim);
-  padding-top: 9px;
-  border-top: 1px solid var(--border);
-}
-.dive-when:last-child { margin-bottom: 0; }
-.dive-when b {
-  display: block;
-  font-size: 10.5px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  margin-bottom: 3px;
-}
-.dive-when.use b { color: var(--c-sorted); }
-.dive-when.avoid b { color: var(--c-swap); }
-.dive-when.avoid { border-top: none; padding-top: 0; }
 
 /* ───────────────────── keyboard focus ──────────────────── */
 /* Buttons had no visible focus state, so tabbing through the UI
@@ -1258,3 +1169,79 @@ body.truncated .note { color: var(--c-swap); }
   line-height: 1.5;
   color: var(--text-faint);
 }
+
+/* ──────────────── the right-hand panel ──────────────── */
+
+/* Cost as a row of chips. The old five-row table was 149px tall, which
+   with the prose above it pushed the steps list — the one thing that
+   tracks the running animation — off the bottom of the panel. */
+
+/* Two to a row, not free-flowing: wrapping chips of uneven width came
+   out the same height as the table they replaced. */
+.cost-chips {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+}
+
+.cost-chip {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 3px 7px;
+  background: var(--bg-sunken);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-family: var(--mono);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.cost-chip b {
+  font-family: var(--sans);
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+/* The full text lives on the Learn page. Here it is clamped, because an
+   unbounded paragraph of prose pushed the steps list — the one thing
+   that follows the running animation — off the bottom of the panel. */
+.about-block #info-about,
+.about-block .pick-line span:last-child {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.about-block #info-about { -webkit-line-clamp: 5; }
+.about-block .pick-line span:last-child { -webkit-line-clamp: 3; }
+
+.pick-line[hidden] { display: none; }
+
+.pick-line {
+  display: flex;
+  gap: 7px;
+  margin: 9px 0 0;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--text-dim);
+}
+
+.pick-line .pick-star { flex: none; }
+
+.info-more {
+  display: inline-block;
+  margin-top: 11px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent);
+  text-decoration: none;
+  line-height: 1.45;
+}
+
+.info-more:hover { text-decoration: underline; }
+
