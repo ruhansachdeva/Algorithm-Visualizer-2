@@ -126,6 +126,24 @@ export async function run() {
       }
     }
 
+    /* ── the ids requireMarkup() insists on must actually exist ──
+       This one is load-bearing: the guard stops the page and shows a
+       "half-updated" notice when an id is missing, so a single typo in
+       that list would show it to every visitor, permanently, on a page
+       that is in fact perfectly fine. */
+    for (const src of scripts) {
+      const js = read(src);
+      const call = /requireMarkup\(\[([^\]]*)\]/.exec(js);
+      if (!call) continue;
+      const required = [...call[1].matchAll(/'([^']+)'/g)].map((m) => m[1]);
+      check(required.length > 0, `${src}: requireMarkup() was given an empty list, so it guards nothing`);
+      for (const id of required) {
+        check(ids.has(id),
+          `${page}: ${src} requires #${id} before it will run, but the page has no such element — ` +
+          'every visitor would be told the page is half-updated');
+      }
+    }
+
     /* ── stylesheets and modules must exist ── */
     for (const m of html.matchAll(/<link[^>]+href="([^"]+\.css)"/g)) {
       check(sheets.includes(m[1].replace('css/', '')), `${page} links ${m[1]}, which is missing`);

@@ -23,12 +23,21 @@
    ============================================================ */
 
 import { findAlgo, VIEWS } from '../registry.js';
-import { initTheme, wireTheme, navElement, lastAlgo } from '../shared/chrome.js';
+import { initTheme, wireTheme, navElement, lastAlgo, requireMarkup } from '../shared/chrome.js';
 import { BANK, KINDS, withShuffledOptions } from './bank.mjs';
 import { generate } from './generate.mjs';
 import * as progress from './progress.mjs';
 
 const $ = (id) => document.getElementById(id);
+/* The markup and this script are two files with two cache lifetimes, so
+   a returning visitor can be served one of them new and the other old.
+   Check before touching anything: carrying on would throw on the first
+   missing element and leave a blank page. */
+if (!requireMarkup(['options', 'kind-list', 'topic-list', 'score-answered', 'feedback', 'q-prompt'])) {
+  // requireMarkup has already reloaded or explained; stop here.
+  throw new Error('stale markup — stopped before running against it');
+}
+
 const dom = {
   answered: $('score-answered'), percent: $('score-percent'), streak: $('score-streak'),
   barFill: $('score-bar-fill'), barLabel: $('score-bar-label'),

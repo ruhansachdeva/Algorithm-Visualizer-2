@@ -15,9 +15,18 @@ import { getSeed, setSeed, reseed, rewind } from './rng.js';
 import { Player, record } from './engine/player.js';
 import { palette, fitCanvas } from './views/draw.js';
 import { barAt } from './views/array-view.js';
-import { navElement, rememberAlgo } from './shared/chrome.js';
+import { navElement, rememberAlgo, requireMarkup } from './shared/chrome.js';
 
 const $ = (id) => document.getElementById(id);
+
+/* The markup and this script are two files with two cache lifetimes, so
+   a returning visitor can be served one of them new and the other old.
+   Check before touching anything: carrying on would throw on the first
+   missing element and leave a blank page. */
+if (!requireMarkup(['algo-list', 'canvas', 'cost-chips', 'info-more', 'pick-line', 'pseudocode', 'stats', 'scrub'])) {
+  // requireMarkup has already reloaded or explained; stop here.
+  throw new Error('stale markup — stopped before running against it');
+}
 
 const dom = {
   list: $('algo-list'),
