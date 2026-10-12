@@ -11,6 +11,7 @@
 const SUITES = [
   './catalogue.test.mjs',
   './seeding.test.mjs',
+  './inputs.test.mjs',
   './sorting.test.mjs',
   './searching.test.mjs',
   './pathfinding.test.mjs',
