@@ -17,6 +17,14 @@ the random seed all travel in the URL, so whoever opens it sees exactly the
 run you were looking at — for example
 [`#graph-dijkstra@40`](https://ruhansachdeva.github.io/Algorithm-Visualizer-2/#graph-dijkstra@40).
 
+### Three pages
+
+| | |
+|---|---|
+| **[Visualize](https://ruhansachdeva.github.io/Algorithm-Visualizer-2/)** | Watch one run, step by step, with the controls to scrub and race. |
+| **[Learn](https://ruhansachdeva.github.io/Algorithm-Visualizer-2/learn.html)** | Where the cost comes from — and the algorithm actually run at a range of input sizes, with the predicted curve drawn over the measurement. |
+| **[Practice](https://ruhansachdeva.github.io/Algorithm-Visualizer-2/practice.html)** | Five kinds of question that check whether any of it stuck. |
+
 ## Running it locally
 
 You only need this to change the code — to just use the visualizer, open the
@@ -184,6 +192,56 @@ The sidebar groups algorithms into colour-coded categories you can fold away,
 and the colour follows through to the selected algorithm and its heading. Type
 in the search box to filter; `/` jumps there, `↑ ↓` move through the list.
 
+## Learn
+
+One page per algorithm, with the room the visualizer's side panel does not
+have: what it costs, where that cost comes from, when you would reach for it,
+and the case against it.
+
+The part worth seeing is the measurement. The cost table is a prediction, so
+the page runs the algorithm at up to nine input sizes, counts the work it
+really does, and draws the predicted shape over the result — scaled to the
+data, because big-O fixes the shape and not the height.
+
+Mostly they agree, and the interesting pages are the ones where they do not:
+
+- **Naive string search** is `O(n·m)` and measures linear on ordinary text,
+  because a mismatch almost always comes immediately.
+- **A\*** on an open board comes in well under `O(E log V)`: knowing where the
+  goal is means not searching the half of the map that leads away from it.
+- **Graph colouring** measures linear against a bound of `O(mⁿ)` — it finds an
+  answer long before it exhausts the search space.
+- **Bucket sort** measures *quadratic* against `O(n + k)`, because this
+  implementation keeps the bucket count fixed, which is a fair demonstration
+  of the assumption bucket sort rests on.
+
+In each case the page says so, and explains that a worst case is a ceiling
+rather than a forecast — which is the most useful thing to understand about
+big-O and the hardest thing to show in a table.
+
+## Practice
+
+Five formats, from two sources.
+
+Generated from real runs, so the answer is read off an actual execution and
+the supply is unlimited:
+
+- **Predict the next step** — a run paused at a comparison, drawn with the
+  same canvas the visualizer uses. Do those two swap?
+- **Trace it by hand** — an exact small input, and a question about the count.
+
+Written, because the question is the judgement:
+
+- **Which would you use?** — a situation and four defensible-looking answers.
+- **Spot the complexity** — a snippet, including the ones that are not what
+  they look like.
+- **Find the bug** — a broken implementation, and one that is not broken,
+  because otherwise the format gives itself away.
+
+Every wrong option says why it is wrong. Progress is kept in the browser —
+what you have answered, what you got wrong, and a queue of what to come back
+to. No account, and nothing leaves the machine.
+
 ## How it works
 
 Every algorithm is a **generator**. It runs the real algorithm, and each `yield`
@@ -212,6 +270,9 @@ reading an ordinary implementation.
 ```
 start.command           double-click to run it
 serve.py                the local server (caching off, so reloads are honest)
+index.html              Visualize
+learn.html              Learn
+practice.html           Practice
 tests/                  node tests/run.mjs
 index.html              page shell
 css/style.css           all styling; colors are CSS variables at the top

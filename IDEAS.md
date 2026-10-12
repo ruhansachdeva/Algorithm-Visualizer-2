@@ -7,6 +7,10 @@ place to put an idea so it stops rattling around.
 
 ## Make it learning-based, not just watching-based
 
+**Built.** This is the Learn and Practice pages. What follows is the original
+note, kept because it is the argument for why those pages exist, with what
+actually shipped recorded at the end.
+
 Right now the app *shows* you an algorithm running. It does not teach you, and
 it never checks whether you understood. Watching bubble sort is not the same as
 being able to reason about it.
@@ -55,3 +59,33 @@ happens.
 Writing good questions is slow, and bad questions are worse than none. Content
 is the whole cost here, not code. Better to ship five genuinely good questions
 per category than forty filler ones.
+
+### What shipped
+
+All four parts, as `learn.html` and `practice.html`.
+
+The complexity measurement went further than planned: rather than illustrating
+the curve, the page runs each algorithm at up to nine input sizes and fits the
+predicted shape to the real operation counts. That turned out to be worth more
+than the explanation, because it shows where theory and practice part company —
+17 algorithms measure well under their stated cost, and saying why is a better
+lesson about big-O than any amount of prose about ceilings.
+
+Two of the five question formats are generated from real runs rather than
+written, so their answers cannot be wrong and there is an endless supply. The
+other three are written, 30 of them, and the worry above was the right one:
+every one of them took longer than the code around it.
+
+Written explanations of where the cost comes from exist for 66 of the 94. The
+remaining 28 have the measurement, the cost table and the trade-offs, and no
+"where that comes from" section at all — an empty, hedging paragraph would be
+exactly the filler this file warned about.
+
+### Still not done
+
+- A per-algorithm complexity explanation for the remaining 28.
+- Questions that are harder than multiple choice — "what is the invariant
+  here", with a free-text answer, is the obvious next format and needs a way
+  to mark an answer that is right but differently worded.
+- Nothing adapts. The queue prefers what you got wrong, which is not the same
+  as noticing that you are reliably weak on amortised analysis.
