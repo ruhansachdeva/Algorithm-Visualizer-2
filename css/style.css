@@ -268,6 +268,10 @@ body {
   transition: grid-template-rows .18s ease, opacity .14s ease;
 }
 .cat-group > * { min-height: 0; }
+
+/* Set while a double click undoes the fold its first click caused, so the
+   section snaps back instead of animating open again. */
+.no-fold-anim .cat-group { transition: none; }
 .cat-group.shut {
   grid-template-rows: 0fr;
   opacity: 0;
