@@ -145,6 +145,33 @@ export async function run() {
     check(curves.agreement(sizes, tall, (n) => n * n) > 0.999,
       'agreement() must be scale-free — it is comparing shapes, not heights');
 
+    /* ── power law or exponential ──
+       Hanoi over 2…9 discs fits an exponent of about 3.4, which is
+       indistinguishable from a cubic by exponent alone. Calling it
+       quadratic and saying "doubling the discs quadruples the work" was
+       wrong on the page before this test existed. */
+    const small = [2, 3, 4, 5, 6, 7, 8];
+    equal(curves.growthKind(small, small.map((n) => 2 ** n)).kind, 'exponential',
+      'growthKind() on 2ⁿ');
+    equal(curves.growthKind(small, small.map((n) => n ** 3)).kind, 'power',
+      'growthKind() on n³ over the same small range');
+    equal(curves.growthKind(sizes, square).kind, 'power', 'growthKind() on a quadratic');
+    const base = curves.growthKind(small, small.map((n) => 2 ** n)).base;
+    check(Math.abs(base - 2) < 0.05, `growthKind() should report a base near 2 for 2ⁿ, got ${base}`);
+
+    // Every algorithm the page would describe as exploding should be one
+    // whose stated cost is actually exponential or factorial.
+    for (const algo of ALL) {
+      if (!mz.PLANS[algo.input]) continue;
+      const m = mz.measure(algo, { repeats: 1, cap: 120000 });
+      const sr = mz.series(m);
+      const k = curves.growthKind(m.sizes, sr.values);
+      if (k.kind !== 'exponential' || k.base <= 1.3) continue;
+      const cost = `${algo.cost?.avg} ${algo.cost?.worst}`;
+      check(/[ⁿ!]|\^|exponential/.test(cost),
+        `${algo.id} measured as exponential (×${k.base.toFixed(1)} per item) but its cost is given as ${algo.cost?.avg} — one of the two is wrong`);
+    }
+
     /* ── verdicts ── */
     const linearData = sizes.map((n) => 5 * n);
     const vAgree = curves.verdict({ sizes, measured: linearData, shape: (n) => n, cost: 'O(n)' });

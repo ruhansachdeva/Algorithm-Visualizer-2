@@ -252,3 +252,52 @@ export function doubling(sizes, measured) {
   if (!best) return null;
   return { ...best, sizeRatio: best.to / best.from, workRatio: best.toWork / best.fromWork };
 }
+
+/**
+ * Is this growth a power of n, or exponential in n?
+ *
+ * The doubling story only works for a power law. Towers of Hanoi over
+ * 2…9 discs fits an exponent of about 3.4, which is indistinguishable
+ * from a cubic by exponent alone — and "doubling the discs quadruples
+ * the work" is a badly wrong description of something that doubles with
+ * every single disc added.
+ *
+ * The clean test is which straight line the data really lies on:
+ * log(work) against log(n) for a power law, log(work) against n for an
+ * exponential. Whichever is straighter wins.
+ *
+ * @returns {{kind: 'power'|'exponential', base?: number, r2: number}}
+ */
+export function growthKind(sizes, measured) {
+  const pts = [];
+  for (let i = 0; i < sizes.length; i++) {
+    if (measured[i] > 0 && sizes[i] > 0) pts.push([sizes[i], Math.log(measured[i])]);
+  }
+  if (pts.length < 3) return { kind: 'power', r2: 0 };
+
+  const straightness = (xs, ys) => {
+    const n = xs.length;
+    const mx = xs.reduce((a, b) => a + b, 0) / n;
+    const my = ys.reduce((a, b) => a + b, 0) / n;
+    let sxy = 0;
+    let sxx = 0;
+    let syy = 0;
+    for (let i = 0; i < n; i++) {
+      sxy += (xs[i] - mx) * (ys[i] - my);
+      sxx += (xs[i] - mx) ** 2;
+      syy += (ys[i] - my) ** 2;
+    }
+    return { r2: sxx && syy ? (sxy * sxy) / (sxx * syy) : 0, slope: sxx ? sxy / sxx : 0 };
+  };
+
+  const ys = pts.map((p) => p[1]);
+  const asPower = straightness(pts.map((p) => Math.log(p[0])), ys);
+  const asExp = straightness(pts.map((p) => p[0]), ys);
+
+  // Ties go to the power law: it is the commoner case, and claiming
+  // "exponential" wrongly is the more alarming mistake of the two.
+  if (asExp.r2 > asPower.r2 + 0.01) {
+    return { kind: 'exponential', base: Math.exp(asExp.slope), r2: asExp.r2 };
+  }
+  return { kind: 'power', r2: asPower.r2 };
+}

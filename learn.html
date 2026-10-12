@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Learn — Algorithm Visualizer</title>
+<meta name="description" content="Where each algorithm's running time comes from, measured against the theory, and when you would actually reach for it.">
+<meta name="color-scheme" content="dark light">
+<meta name="theme-color" content="#0e1116">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230e1116'/%3E%3Crect x='6' y='17' width='4' height='9' rx='1' fill='%234da3ff'/%3E%3Crect x='12' y='12' width='4' height='14' rx='1' fill='%23ffc53d'/%3E%3Crect x='18' y='8' width='4' height='18' rx='1' fill='%233ddc84'/%3E%3Crect x='24' y='20' width='4' height='6' rx='1' fill='%23ff5c5c'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/learn.css">
+</head>
+<body class="page-learn">
+
+<a class="skip-link" href="#doc">Skip to the explanation</a>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="logo" aria-hidden="true"></span>
+    <div class="brand-text">
+      <h1>Algorithm Visualizer</h1>
+      <p class="tagline">Where the cost comes from</p>
+    </div>
+  </div>
+  <div class="topbar-right" id="topbar-right">
+    <button class="icon-btn" id="theme-toggle" title="Toggle light / dark" aria-label="Toggle theme">◐</button>
+  </div>
+</header>
+
+<main class="learn-layout">
+
+  <nav class="sidebar" id="sidebar" aria-label="Algorithms">
+    <input type="search" id="algo-filter" class="filter" placeholder="Search algorithms…" autocomplete="off" aria-label="Search algorithms">
+    <div id="algo-list" class="algo-list"></div>
+  </nav>
+
+  <article class="doc" id="doc">
+
+    <header class="doc-head">
+      <div class="doc-crumb" id="doc-crumb"></div>
+      <h2 id="doc-title">—</h2>
+      <p class="doc-about" id="doc-about"></p>
+      <div class="doc-actions">
+        <a class="doc-btn primary" id="open-viz" href="index.html">Watch it run →</a>
+      </div>
+    </header>
+
+    <!-- ───────── cost ───────── -->
+    <section class="doc-sec">
+      <h3>What it costs</h3>
+      <div class="cost-grid" id="cost-grid"></div>
+    </section>
+
+    <!-- ───────── measured growth ───────── -->
+    <section class="doc-sec">
+      <h3>Measured against the theory</h3>
+      <p class="doc-lede">
+        The figure above is a prediction. This runs the algorithm at a
+        range of input sizes, counts the work it really does, and draws
+        the predicted shape through the result.
+      </p>
+
+      <div class="chart-card">
+        <div class="chart-toolbar">
+          <span class="chart-key"><i class="key-line measured"></i>measured</span>
+          <span class="chart-key"><i class="key-line predicted"></i><span id="key-predicted">predicted</span></span>
+          <div class="chart-toolbar-right">
+            <button class="chip" id="axes-toggle" type="button" aria-pressed="true" title="A power law is a straight line on log-log axes, and its exponent is the slope">log axes</button>
+            <button class="chip" id="remeasure" type="button" title="Measure again on different random inputs">measure again</button>
+          </div>
+        </div>
+        <div class="chart-holder">
+          <canvas id="chart"></canvas>
+          <div class="chart-busy" id="chart-busy">measuring…</div>
+        </div>
+        <p class="chart-note" id="chart-note"></p>
+      </div>
+
+      <div class="verdict" id="verdict" hidden>
+        <span class="verdict-badge" id="verdict-badge"></span>
+        <p id="verdict-text"></p>
+      </div>
+
+      <div class="doubling" id="doubling" hidden>
+        <h4 id="doubling-head">What happens when the input doubles</h4>
+        <p id="doubling-text"></p>
+        <table class="growth-table" id="growth-table"></table>
+        <p class="doc-fine" id="growth-fine"></p>
+      </div>
+    </section>
+
+    <!-- ───────── when to use ───────── -->
+    <section class="doc-sec" id="sec-when">
+      <h3>When you would reach for it</h3>
+      <div class="when-grid">
+        <div class="when-card good">
+          <h4>Reach for it when</h4>
+          <p id="when-use">—</p>
+        </div>
+        <div class="when-card bad">
+          <h4>Avoid it when</h4>
+          <p id="when-avoid">—</p>
+        </div>
+      </div>
+      <div class="pick-note" id="pick-note" hidden>
+        <span class="pick-star">★</span>
+        <p id="pick-text"></p>
+      </div>
+    </section>
+
+    <!-- ───────── pros and cons ───────── -->
+    <section class="doc-sec" id="sec-tradeoffs">
+      <h3>Pros and cons</h3>
+      <div class="pc-grid">
+        <div class="pc-col">
+          <h4 class="pc-head good">Going for it</h4>
+          <ul id="pros"></ul>
+        </div>
+        <div class="pc-col">
+          <h4 class="pc-head bad">Against it</h4>
+          <ul id="cons"></ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────── steps ───────── -->
+    <section class="doc-sec">
+      <h3>How it works, step by step</h3>
+      <ol class="pseudo" id="pseudocode"></ol>
+    </section>
+
+  </article>
+</main>
+
+<script type="module" src="js/learn/page.js"></script>
+</body>
+</html>

@@ -16,6 +16,7 @@ import { TRADEOFFS } from './tradeoffs.js';
 import { Player, record } from './engine/player.js';
 import { palette, fitCanvas } from './views/draw.js';
 import { barAt } from './views/array-view.js';
+import { navElement, rememberAlgo } from './shared/chrome.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -393,7 +394,7 @@ function select(id) {
   rerun();
 
   // remember the choice across reloads
-  try { localStorage.setItem('av2:last', id); } catch {}
+  rememberAlgo(id);
   syncHash();
 }
 
@@ -932,6 +933,8 @@ window.addEventListener('resize', () => {
 });
 
 /* ───────────────────────── start ───────────────────────── */
+
+document.querySelector('.topbar-right').prepend(navElement('visualize'));
 
 dom.count.textContent = `${ALL.length} algorithms`;
 
