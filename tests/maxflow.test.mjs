@@ -115,5 +115,45 @@ export async function run() {
       'reaching it needs a route that runs BACKWARDS along an edge to undo an earlier commitment');
   }
 
+  /* ── the graphs the app actually builds ──
+     Correctness against Dinic is not much use if the network the user is
+     shown has no route from source to sink. buildGraph wires a spanning
+     tree and then chooses each edge's direction at random, which left
+     62% of nine-node graphs with no path from node 0 to the last node —
+     so most runs of Maximum Flow in the visualizer answered 0, and the
+     algorithm looked broken when the generator was at fault. */
+  {
+    const { buildGraph } = await load('inputs.js');
+    const { setSeed } = await load('rng.js');
+    const spec = algo.graph;
+
+    let reachable = 0;
+    let pushed = 0;
+    const trials = 150;
+    for (let i = 0; i < trials; i++) {
+      // a number, not a string: setSeed reads strings as base-36
+      setSeed(0x9e3779b9 ^ (i * 2654435761));
+      const g = buildGraph(9, spec, { extra: 0.35 });
+
+      // is the sink reachable at all, ignoring the algorithm?
+      const seen = new Set([0]);
+      const queue = [0];
+      while (queue.length) {
+        const u = queue.shift();
+        for (const e of g.adj[u]) if (!seen.has(e.to)) { seen.add(e.to); queue.push(e.to); }
+      }
+      if (seen.has(8)) reachable++;
+
+      const last = record(algo.run({ ...g, colors: 3 }), 200000).at(-1);
+      if ((last.stats?.['flow pushed'] ?? 0) > 0) pushed++;
+    }
+
+    check(reachable === trials,
+      `the sink was unreachable in ${trials - reachable} of ${trials} generated networks — ` +
+      'a flow problem with no route from source to sink is not a flow problem');
+    check(pushed === trials,
+      `max flow pushed nothing in ${trials - pushed} of ${trials} generated networks`);
+  }
+
   return tally();
 }
