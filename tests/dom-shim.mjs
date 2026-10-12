@@ -52,14 +52,36 @@ class Node {
   fire(type) { for (const fn of this.listeners[type] || []) fn.call(this, this); }
 }
 
+/**
+ * A localStorage that behaves like the real one, including throwing
+ * nowhere and persisting nothing. The progress store has to work when
+ * storage is unavailable, so tests need to be able to break it too.
+ */
+export function fakeStorage({ broken = false } = {}) {
+  const map = new Map();
+  const guard = () => { if (broken) throw new Error('storage is not available'); };
+  return {
+    getItem: (k) => { guard(); return map.has(k) ? map.get(k) : null; },
+    setItem: (k, v) => { guard(); map.set(k, String(v)); },
+    removeItem: (k) => { guard(); map.delete(k); },
+    clear: () => { guard(); map.clear(); },
+    get length() { return map.size; },
+  };
+}
+
 /** Install the shim globally; returns a function that removes it again. */
-export function installDom() {
-  const had = 'document' in globalThis;
+export function installDom({ storage = true } = {}) {
+  const hadDoc = 'document' in globalThis;
+  const hadStore = 'localStorage' in globalThis;
   globalThis.document = {
     createElement: (tag) => new Node(tag),
     getElementById: () => new Node('canvas'),
   };
-  return () => { if (!had) delete globalThis.document; };
+  if (storage) globalThis.localStorage = fakeStorage();
+  return () => {
+    if (!hadDoc) delete globalThis.document;
+    if (!hadStore) delete globalThis.localStorage;
+  };
 }
 
 export { Node };

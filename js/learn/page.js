@@ -26,7 +26,7 @@ const $ = (id) => document.getElementById(id);
 const dom = {
   list: $('algo-list'), filter: $('algo-filter'),
   crumb: $('doc-crumb'), title: $('doc-title'), about: $('doc-about'),
-  openViz: $('open-viz'),
+  openViz: $('open-viz'), openPractice: $('open-practice'),
   costGrid: $('cost-grid'),
   chart: $('chart'), chartBusy: $('chart-busy'), chartNote: $('chart-note'),
   keyPredicted: $('key-predicted'),
@@ -109,6 +109,7 @@ function select(id) {
   text(dom.title, algo.name);
   text(dom.about, algo.about);
   dom.openViz.href = `index.html#${algo.id}`;
+  dom.openPractice.href = `practice.html#${algo.id}`;
 
   renderCost(algo);
   renderWhen(algo);

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Practice — Algorithm Visualizer</title>
+<meta name="description" content="Questions that check whether it stuck: predict the next step, pick the right algorithm, spot the complexity, trace a run by hand, find the bug.">
+<meta name="color-scheme" content="dark light">
+<meta name="theme-color" content="#0e1116">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230e1116'/%3E%3Crect x='6' y='17' width='4' height='9' rx='1' fill='%234da3ff'/%3E%3Crect x='12' y='12' width='4' height='14' rx='1' fill='%23ffc53d'/%3E%3Crect x='18' y='8' width='4' height='18' rx='1' fill='%233ddc84'/%3E%3Crect x='24' y='20' width='4' height='6' rx='1' fill='%23ff5c5c'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/practice.css">
+</head>
+<body class="page-practice">
+
+<a class="skip-link" href="#quiz">Skip to the questions</a>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="logo" aria-hidden="true"></span>
+    <div class="brand-text">
+      <h1>Algorithm Visualizer</h1>
+      <p class="tagline">Check whether it stuck</p>
+    </div>
+  </div>
+  <div class="topbar-right" id="topbar-right">
+    <button class="icon-btn" id="theme-toggle" title="Toggle light / dark" aria-label="Toggle theme">◐</button>
+  </div>
+</header>
+
+<main class="practice-layout">
+
+  <!-- ───────── the quiz ───────── -->
+  <section class="quiz" id="quiz">
+
+    <div class="scorebar">
+      <div class="score-item">
+        <span class="score-num" id="score-answered">0</span>
+        <span class="score-key">answered</span>
+      </div>
+      <div class="score-item">
+        <span class="score-num" id="score-percent">—</span>
+        <span class="score-key">correct</span>
+      </div>
+      <div class="score-item">
+        <span class="score-num" id="score-streak">0</span>
+        <span class="score-key">streak</span>
+      </div>
+      <div class="score-bar-wrap" title="How much of the written bank you have answered correctly">
+        <div class="score-bar"><div class="score-bar-fill" id="score-bar-fill"></div></div>
+        <span class="score-bar-label" id="score-bar-label"></span>
+      </div>
+    </div>
+
+    <!-- question -->
+    <article class="card" id="card">
+      <div class="card-head">
+        <span class="kind-chip" id="kind-chip">—</span>
+        <span class="card-topic" id="card-topic"></span>
+      </div>
+
+      <h2 class="q-prompt" id="q-prompt">Loading…</h2>
+      <p class="q-note" id="q-note" hidden></p>
+
+      <pre class="q-code" id="q-code" hidden><code></code></pre>
+
+      <div class="q-visual" id="q-visual" hidden>
+        <canvas id="q-canvas"></canvas>
+        <p class="q-hint" id="q-hint"></p>
+      </div>
+
+      <div class="options" id="options" role="group" aria-label="Answers"></div>
+
+      <div class="feedback" id="feedback" hidden>
+        <div class="feedback-head">
+          <span class="feedback-badge" id="feedback-badge"></span>
+          <span class="feedback-extra" id="feedback-extra"></span>
+        </div>
+        <p class="feedback-text" id="feedback-text"></p>
+        <div class="feedback-links" id="feedback-links"></div>
+      </div>
+
+      <div class="card-foot">
+        <button class="btn primary" id="next-btn" hidden>Next question →</button>
+        <button class="btn" id="skip-btn">Skip this one</button>
+        <span class="card-foot-note" id="foot-note"></span>
+      </div>
+    </article>
+  </section>
+
+  <!-- ───────── settings and progress ───────── -->
+  <aside class="panel" aria-label="Progress and settings">
+
+    <section class="panel-block">
+      <h3>Question types</h3>
+      <div class="kind-list" id="kind-list"></div>
+    </section>
+
+    <section class="panel-block">
+      <h3>Where you stand</h3>
+      <div class="topic-list" id="topic-list"></div>
+      <p class="panel-fine" id="revisit-note"></p>
+    </section>
+
+    <section class="panel-block">
+      <h3>About your progress</h3>
+      <p class="panel-fine">
+        Kept in this browser only — no account, nothing sent anywhere.
+        Clearing site data clears it, and it will not follow you to
+        another device.
+      </p>
+      <button class="btn danger" id="reset-btn">Reset my progress</button>
+    </section>
+
+  </aside>
+</main>
+
+<script type="module" src="js/practice/page.js"></script>
+</body>
+</html>

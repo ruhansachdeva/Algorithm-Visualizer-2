@@ -10,11 +10,10 @@
 
 const THEME_KEY = 'av2:theme';
 
-/* Practice is next and goes in here when it exists — a tab that 404s is
-   worse than a tab that is not there yet. */
 export const PAGES = [
   { id: 'visualize', href: 'index.html',    label: 'Visualize', hint: 'Watch an algorithm run, step by step' },
   { id: 'learn',     href: 'learn.html',    label: 'Learn',     hint: 'Where the complexity comes from, and when to reach for it' },
+  { id: 'practice',  href: 'practice.html', label: 'Practice',  hint: 'Questions that check whether it stuck' },
 ];
 
 /**
