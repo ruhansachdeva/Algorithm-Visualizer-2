@@ -16,13 +16,22 @@
 import { CATEGORIES, ALL, findAlgo } from '../registry.js';
 import { TRADEOFFS } from '../tradeoffs.js';
 import { icon } from '../icons.js';
-import { initTheme, wireTheme, navElement, rememberAlgo, lastAlgo } from '../shared/chrome.js';
+import { initTheme, wireTheme, navElement, rememberAlgo, lastAlgo, requireMarkup } from '../shared/chrome.js';
 import { measure, series, sizesFor, runShape, PLANS, NO_PLAN } from './measure.mjs';
 import { shapeFor, whyUnplottable, fitScale, verdict, describeExponent, doubling, exponent, growthKind } from './curves.mjs';
 import { drawChart, clearChart, short } from './chart.mjs';
 import { WHY } from './why.mjs';
 
 const $ = (id) => document.getElementById(id);
+/* The markup and this script are two files with two cache lifetimes, so
+   a returning visitor can be served one of them new and the other old.
+   Check before touching anything: carrying on would throw on the first
+   missing element and leave a blank page. */
+if (!requireMarkup(['algo-list', 'doc-title', 'cost-grid', 'chart', 'verdict', 'doubling-head', 'open-practice'])) {
+  // requireMarkup has already reloaded or explained; stop here.
+  throw new Error('stale markup — stopped before running against it');
+}
+
 const dom = {
   list: $('algo-list'), filter: $('algo-filter'),
   crumb: $('doc-crumb'), title: $('doc-title'), about: $('doc-about'),
