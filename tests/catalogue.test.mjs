@@ -69,5 +69,38 @@ export async function run() {
   check(Object.keys(HIT_TEST).every((v) => VIEWS[v] !== undefined),
     'a hit-test is registered for a view that does not exist');
 
+  /* ── the family guides ──
+     Double-clicking a section heading explains the whole family. These
+     render through textContent, so any Markdown left in them shows up
+     literally on screen — a stray *and* was visible in the Trees guide
+     before this existed. Note that "A*" is an algorithm, not emphasis. */
+  {
+    const { GUIDES } = await import('./../js/category-guides.mjs');
+    const parts = ['what', 'when', 'choosing', 'watch'];
+
+    for (const cat of CATEGORIES) {
+      const guide = GUIDES[cat.id];
+      check(!!guide, `category "${cat.id}" has no guide, so double-clicking it would do nothing`);
+      if (!guide) continue;
+      for (const part of parts) {
+        const text = guide[part];
+        check(typeof text === 'string' && text.length > 90,
+          `${cat.id}.${part} is missing or too thin to be worth reading`);
+        if (!text) continue;
+        const emphasis = text.match(/(?<![A-Za-z])\*[^*\s][^*]*\*|_[^_]+_|`/);
+        check(!emphasis,
+          `${cat.id}.${part} contains Markdown (${emphasis?.[0]}) — it is rendered as plain text and would show the markup`);
+      }
+      // It is about the family. A guide that only names one algorithm has
+      // drifted into being a Learn page.
+      check(!/^(This algorithm|It )/.test(guide.what),
+        `${cat.id}.what reads like it is describing a single algorithm`);
+    }
+
+    for (const id of Object.keys(GUIDES)) {
+      check(CATEGORIES.some((c) => c.id === id), `GUIDES has "${id}", which is not a category`);
+    }
+  }
+
   return tally();
 }

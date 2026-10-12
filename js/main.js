@@ -11,6 +11,7 @@
 import { CATEGORIES, VIEWS, HIT_TEST, findAlgo, ALL } from './registry.js';
 import { buildInputs, pointer, fitGridRows } from './inputs.js';
 import { icon } from './icons.js';
+import { GUIDES } from './category-guides.mjs';
 import { getSeed, setSeed, reseed, rewind } from './rng.js';
 import { Player, record } from './engine/player.js';
 import { palette, fitCanvas } from './views/draw.js';
@@ -220,7 +221,22 @@ function buildSidebar(filterText = '') {
     const groupInner = document.createElement('div');
     group.append(groupInner);
 
-    head.addEventListener('click', () => toggleCategory(cat.id));
+    /* Single click folds, double click explains. A double click fires two
+       clicks first, so the fold is deferred briefly and cancelled if the
+       second one arrives — otherwise opening the guide also collapses the
+       section behind it. */
+    let clickTimer = null;
+    head.addEventListener('click', () => {
+      if (clickTimer) return;
+      clickTimer = setTimeout(() => { clickTimer = null; toggleCategory(cat.id); }, 220);
+    });
+    head.addEventListener('dblclick', (e) => {
+      e.preventDefault();
+      clearTimeout(clickTimer);
+      clickTimer = null;
+      openGuide(cat.id);
+    });
+    head.title = `${cat.name} — double-click for what this family is for`;
     dom.list.append(head, group);
 
     for (const algo of matches) {
@@ -261,6 +277,52 @@ function buildSidebar(filterText = '') {
     }));
   }
 }
+
+/* ─────────────────── what a family is for ─────────────────── */
+
+/**
+ * Double-clicking a section heading opens this. It is about the family,
+ * never about one algorithm: which family a problem belongs to is the
+ * first decision you make and a bigger one than the choice inside it.
+ */
+function openGuide(id) {
+  const cat = CATEGORIES.find((c) => c.id === id);
+  const guide = GUIDES[id];
+  if (!cat || !guide) return;
+
+  $('guide-icon').replaceChildren(icon(cat.id, 20));
+  $('guide-icon').style.color = cat.color;
+  $('guide-title').textContent = cat.name;
+  $('guide-sub').textContent = `${cat.blurb} · ${ALL.filter((a) => a.category === id).length} algorithms`;
+
+  const body = $('guide-body');
+  body.replaceChildren();
+  const sections = [
+    ['What it is', guide.what],
+    ['When you reach for it', guide.when],
+    ['Choosing within it', guide.choosing],
+    ['Worth watching for', guide.watch],
+  ];
+  for (const [heading, text] of sections) {
+    if (!text) continue;
+    const h = document.createElement('h3');
+    h.textContent = heading;
+    const p = document.createElement('p');
+    p.textContent = text;
+    body.append(h, p);
+  }
+
+  const first = ALL.find((a) => a.category === id);
+  $('guide-learn').href = `learn.html#${first?.id ?? ''}`;
+
+  $('guide').hidden = false;
+  $('guide-close').focus();
+}
+
+function closeGuide() { $('guide').hidden = true; }
+
+$('guide-close').addEventListener('click', closeGuide);
+$('guide').addEventListener('click', (e) => { if (e.target.id === 'guide') closeGuide(); });
 
 /** A small category chip above the title: icon, name, and what the family is for. */
 function renderCrumb(algo) {
@@ -806,6 +868,7 @@ dom.canvas.addEventListener('mouseleave', () => { dom.canvas.title = ''; });
 window.addEventListener('keydown', (e) => {
   // Escape works even from inside a field, so there is always a way out.
   if (e.key === 'Escape') {
+    if (!$('guide').hidden) { closeGuide(); return; }
     if (!help.hidden) { toggleHelp(false); return; }
     if (document.activeElement === dom.filter) {
       dom.filter.value = '';
