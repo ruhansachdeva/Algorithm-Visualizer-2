@@ -1341,6 +1341,50 @@ body.truncated .note { color: var(--c-swap); }
    selecting the label text under the pointer. */
 .cat-head { user-select: none; }
 
+/* The heading and its info button sit side by side. */
+.cat-row { display: flex; align-items: stretch; }
+.cat-row .cat-head { flex: 1; min-width: 0; }
+
+.cat-info {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  margin: 0 4px 0 -2px;
+  background: none;
+  border: 0;
+  border-radius: 6px;
+  color: var(--text-faint);
+  cursor: pointer;
+  opacity: .5;
+  transition: opacity .12s, background .12s, color .12s;
+}
+
+/* A small circled i: the ring and the letter are one element, so there
+   is no way for them to drift apart. */
+.cat-info-mark {
+  display: grid;
+  place-items: center;
+  width: 15px;
+  height: 15px;
+  border: 1.3px solid currentColor;
+  border-radius: 50%;
+  font-family: var(--serif, Georgia, "Times New Roman", serif);
+  font-size: 10px;
+  font-style: italic;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.cat-row:hover .cat-info { opacity: .85; }
+
+.cat-info:hover,
+.cat-info:focus-visible {
+  opacity: 1;
+  background: var(--bg-hover);
+  color: var(--accent);
+}
+
 @media (max-width: 560px) {
   .guide-card { padding: 20px 18px 18px; }
   .guide-head h2 { font-size: 18px; }
