@@ -146,6 +146,23 @@
 
 </main>
 
+<!-- What a whole family of algorithms is for, opened by double-clicking
+     a section heading in the sidebar. -->
+<div class="overlay" id="guide" hidden>
+  <div class="guide-card" role="dialog" aria-modal="true" aria-labelledby="guide-title">
+    <button class="guide-close" id="guide-close" type="button" aria-label="Close">×</button>
+    <div class="guide-head">
+      <span class="guide-icon" id="guide-icon" aria-hidden="true"></span>
+      <div>
+        <h2 id="guide-title">—</h2>
+        <p class="guide-sub" id="guide-sub"></p>
+      </div>
+    </div>
+    <div class="guide-body" id="guide-body"></div>
+    <p class="guide-foot">Double-click any section heading to read about that family. The case for a single algorithm is on its <a id="guide-learn" href="learn.html">Learn page</a>.</p>
+  </div>
+</div>
+
 <!-- Keyboard shortcut help, toggled with ? -->
 <div class="overlay" id="help" hidden>
   <div class="help-card" role="dialog" aria-modal="true" aria-label="Keyboard shortcuts">
@@ -162,6 +179,12 @@
       <dt>t</dt><dd>light / dark</dd>
       <dt>?</dt><dd>this list</dd>
       <dt>esc</dt><dd>close this / clear the search</dd>
+    </dl>
+    <h3 class="help-sub">With the mouse</h3>
+    <dl>
+      <dt>click a section</dt><dd>fold that category away</dd>
+      <dt>double-click a section</dt><dd>what that whole family is for, and when you would reach for it</dd>
+      <dt>drag on the board</dt><dd>draw walls; drag S or G to move them</dd>
     </dl>
     <p class="help-foot">The URL remembers where you are: <code>#quick@120</code> opens Quick Sort at step 120, and <code>#grid-bfs+grid-astar</code> opens a race.</p>
   </div>
