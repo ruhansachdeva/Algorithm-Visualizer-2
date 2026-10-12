@@ -12,7 +12,6 @@ import { CATEGORIES, VIEWS, HIT_TEST, findAlgo, ALL } from './registry.js';
 import { buildInputs, pointer, fitGridRows } from './inputs.js';
 import { icon } from './icons.js';
 import { getSeed, setSeed, reseed, rewind } from './rng.js';
-import { TRADEOFFS } from './tradeoffs.js';
 import { Player, record } from './engine/player.js';
 import { palette, fitCanvas } from './views/draw.js';
 import { barAt } from './views/array-view.js';
@@ -254,44 +253,6 @@ function buildSidebar(filterText = '') {
   }
 }
 
-/**
- * The pros-and-cons panel. Collapsed by default: it is the most text on
- * the page and only wanted once you have decided to look closely.
- */
-function renderDeepDive(algo) {
-  const body = $('dive-body');
-  const toggle = $('dive-toggle');
-  const t = TRADEOFFS[algo.id];
-
-  $('dive-toggle').closest('.info-block').hidden = !t;
-  if (!t) return;
-
-  body.replaceChildren();
-
-  const list = (items, cls) => {
-    const ul = document.createElement('ul');
-    ul.className = `dive-list ${cls}`;
-    for (const item of items) {
-      ul.append(Object.assign(document.createElement('li'), { textContent: item }));
-    }
-    return ul;
-  };
-  const line = (label, text, cls) => {
-    const p = document.createElement('p');
-    p.className = `dive-when ${cls}`;
-    p.append(Object.assign(document.createElement('b'), { textContent: label }), text);
-    return p;
-  };
-
-  if (t.pros?.length) body.append(list(t.pros, 'pros'));
-  if (t.cons?.length) body.append(list(t.cons, 'cons'));
-  if (t.useWhen) body.append(line('Reach for it when', t.useWhen, 'use'));
-  if (t.avoid) body.append(line('Avoid it when', t.avoid, 'avoid'));
-
-  // Keep whatever the user chose last, rather than snapping shut each time.
-  body.hidden = toggle.getAttribute('aria-expanded') !== 'true';
-}
-
 /** A small category chip above the title: icon, name, and what the family is for. */
 function renderCrumb(algo) {
   const cat = CATEGORIES.find((c) => c.id === algo.category);
@@ -366,9 +327,9 @@ function select(id) {
   dom.title.textContent = algo.name;
   dom.about.textContent = algo.about || '';
 
-  renderDeepDive(algo);
-  $('pick-block').hidden = !algo.pick;
   $('info-pick').textContent = algo.pick || '';
+  $('pick-line').hidden = !algo.pick;
+  $('info-more').href = `learn.html#${algo.id}`;
   document.documentElement.style.setProperty('--cat-current', categoryColor(algo));
   // The headline number people actually compare algorithms by.
   const bigO = $('big-o');
@@ -613,12 +574,32 @@ function legendFor(frames, algo) {
 
 /* ───────────────────── info panel ──────────────────────── */
 
+/* Chips rather than the old five-row table: the same five facts in a
+   third of the height, which is what lets the steps list and the
+   counters share the panel without either being scrolled out of sight. */
 function renderCost(cost = {}) {
-  $('cost-best').textContent   = cost.best   ?? '—';
-  $('cost-avg').textContent    = cost.avg    ?? '—';
-  $('cost-worst').textContent  = cost.worst  ?? '—';
-  $('cost-space').textContent  = cost.space  ?? '—';
-  $('cost-stable').textContent = cost.stable ?? '—';
+  const box = $('cost-chips');
+  box.replaceChildren();
+  // Short labels: "memory" next to "O(log n)" does not fit half of a
+  // 280px panel, and the pair was being clipped.
+  const rows = [
+    ['best', cost.best],
+    ['avg', cost.avg],
+    ['worst', cost.worst],
+    ['mem', cost.space],
+    ['stable', cost.stable],
+  ];
+  for (const [key, value] of rows) {
+    if (!value) continue;
+    const chip = document.createElement('span');
+    chip.className = 'cost-chip';
+    const k = document.createElement('b');
+    k.textContent = key;
+    const v = document.createElement('span');
+    v.textContent = value;
+    chip.append(k, v);
+    box.append(chip);
+  }
 }
 
 function renderPseudocode(lines = []) {
@@ -861,22 +842,6 @@ window.addEventListener('keydown', (e) => {
     case 'End':        player.toEnd(); break;
   }
 });
-
-/* ───────────────────── pros & cons ─────────────────────── */
-
-const diveToggle = $('dive-toggle');
-diveToggle.addEventListener('click', () => {
-  const open = diveToggle.getAttribute('aria-expanded') === 'true';
-  diveToggle.setAttribute('aria-expanded', String(!open));
-  $('dive-body').hidden = open;
-  try { localStorage.setItem('av2:dive', open ? '' : '1'); } catch {}
-});
-try {
-  if (localStorage.getItem('av2:dive')) {
-    diveToggle.setAttribute('aria-expanded', 'true');
-    $('dive-body').hidden = false;
-  }
-} catch {}
 
 /* ───────────────────── copy a link ─────────────────────── */
 

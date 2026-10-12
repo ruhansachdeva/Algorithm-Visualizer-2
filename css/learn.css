@@ -244,6 +244,12 @@
 .chart-holder { position: relative; height: 288px; }
 .chart-holder canvas { display: block; width: 100%; height: 100%; }
 
+/* Must come before the rule below: `display: grid` beats the browser's
+   own `[hidden] { display: none }`, so without this the "measuring…"
+   overlay stays on top of the finished chart forever. The race pane had
+   exactly this bug. */
+.chart-busy[hidden] { display: none; }
+
 .chart-busy {
   position: absolute;
   inset: 0;
@@ -267,6 +273,8 @@
 }
 
 /* ───────────────────── verdict ───────────────────── */
+
+.verdict[hidden] { display: none; }
 
 .verdict {
   display: flex;
@@ -365,6 +373,8 @@
 }
 
 .when-card p { margin: 0; font-size: 13.5px; line-height: 1.66; }
+
+.pick-note[hidden] { display: none; }
 
 .pick-note {
   display: flex;

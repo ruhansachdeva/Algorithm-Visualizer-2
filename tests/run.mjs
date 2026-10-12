@@ -25,6 +25,10 @@ const SUITES = [
   './strings.test.mjs',
   './backtracking.test.mjs',
   './math-geometry.test.mjs',
+  // Last on purpose: it checks the pages rather than the algorithms, and
+  // keeping it away from the suites above means two branches adding a
+  // suite each do not land on the same line.
+  './markup.test.mjs',
 ];
 
 const filter = process.argv[2]?.toLowerCase();

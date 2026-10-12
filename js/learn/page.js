@@ -65,8 +65,9 @@ function buildSidebar(filterText = '') {
 
     const head = document.createElement('div');
     head.className = 'algo-cat';
-    head.innerHTML = icon(cat.id);
-    head.append(document.createTextNode(cat.name));
+    // icon() returns an SVG element, not markup — assigning it to
+    // innerHTML stringifies it to "[object SVGSVGElement]".
+    head.append(icon(cat.id), document.createTextNode(cat.name));
     group.append(head);
 
     for (const algo of algos) {
