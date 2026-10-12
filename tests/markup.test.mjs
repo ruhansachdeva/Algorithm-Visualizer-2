@@ -157,6 +157,56 @@ export async function run() {
     check(/class="skip-link"/.test(html), `${page} has no skip link`);
   }
 
+  /* ── click folds, double click explains ──
+     The invariant that matters is that the outcome does not depend on
+     how fast the two clicks arrive. The first version of this deferred
+     the fold by 220ms and cancelled it on a second click, which meant
+     any double click slower than that folded the section *as well as*
+     opening the guide — and its test passed because it fired both
+     clicks in the same tick, which no hand does. So this drives the
+     events the way a browser does, with the counts a browser sets. */
+  {
+    const { foldOrExplain } = await import('./../js/shared/fold-or-explain.js');
+
+    const makeTarget = () => {
+      const handlers = {};
+      return {
+        addEventListener: (type, fn) => { (handlers[type] ||= []).push(fn); },
+        send(type, detail) {
+          for (const fn of handlers[type] ?? []) fn({ detail, preventDefault() {} });
+        },
+      };
+    };
+
+    // a single click folds, once
+    let folds = 0;
+    let explains = 0;
+    let lastOpts;
+    let el = makeTarget();
+    foldOrExplain(el, { fold: (o) => { folds++; lastOpts = o; }, explain: () => { explains++; } });
+    el.send('click', 1);
+    check(folds === 1 && explains === 0, `a single click should fold once and explain nothing, got fold ${folds} explain ${explains}`);
+
+    // a double click explains, and leaves the fold where it was
+    folds = 0; explains = 0;
+    el = makeTarget();
+    foldOrExplain(el, { fold: (o) => { folds++; lastOpts = o; }, explain: () => { explains++; } });
+    el.send('click', 1);          // browsers send detail 1 …
+    el.send('click', 2);          // … then detail 2 for the second
+    el.send('dblclick', 2);
+    check(explains === 1, `a double click should explain exactly once, got ${explains}`);
+    check(folds === 2, `a double click should fold and unfold, leaving the section as it was — got ${folds} fold call(s)`);
+    check(lastOpts?.animate === false, 'the undo fold should be unanimated, so the section does not visibly flap open');
+
+    // and a third click is still just a click
+    folds = 0; explains = 0;
+    el = makeTarget();
+    foldOrExplain(el, { fold: () => { folds++; }, explain: () => { explains++; } });
+    el.send('click', 1);
+    el.send('click', 1);
+    check(folds === 2 && explains === 0, 'two separate single clicks should fold twice and explain nothing');
+  }
+
   /* ── no page may still advertise the wrong algorithm count ── */
   const { ALL } = await import('./../js/registry.js');
   for (const page of pages) {

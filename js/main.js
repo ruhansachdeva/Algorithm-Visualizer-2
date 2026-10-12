@@ -12,6 +12,7 @@ import { CATEGORIES, VIEWS, HIT_TEST, findAlgo, ALL } from './registry.js';
 import { buildInputs, pointer, fitGridRows } from './inputs.js';
 import { icon } from './icons.js';
 import { GUIDES } from './category-guides.mjs';
+import { foldOrExplain } from './shared/fold-or-explain.js';
 import { getSeed, setSeed, reseed, rewind } from './rng.js';
 import { Player, record } from './engine/player.js';
 import { palette, fitCanvas } from './views/draw.js';
@@ -221,20 +222,9 @@ function buildSidebar(filterText = '') {
     const groupInner = document.createElement('div');
     group.append(groupInner);
 
-    /* Single click folds, double click explains. A double click fires two
-       clicks first, so the fold is deferred briefly and cancelled if the
-       second one arrives — otherwise opening the guide also collapses the
-       section behind it. */
-    let clickTimer = null;
-    head.addEventListener('click', () => {
-      if (clickTimer) return;
-      clickTimer = setTimeout(() => { clickTimer = null; toggleCategory(cat.id); }, 220);
-    });
-    head.addEventListener('dblclick', (e) => {
-      e.preventDefault();
-      clearTimeout(clickTimer);
-      clickTimer = null;
-      openGuide(cat.id);
+    foldOrExplain(head, {
+      fold: (opts) => toggleCategory(cat.id, opts),
+      explain: () => openGuide(cat.id),
     });
     head.title = `${cat.name} — double-click for what this family is for`;
     dom.list.append(head, group);
@@ -354,9 +344,22 @@ function readCollapsed() {
   catch { return []; }
 }
 
-function toggleCategory(id) {
+function toggleCategory(id, { animate = true } = {}) {
   if (collapsed.has(id)) collapsed.delete(id); else collapsed.add(id);
   try { localStorage.setItem('av2:collapsed', JSON.stringify([...collapsed])); } catch {}
+
+  // Undoing the first click of a double click should look like nothing
+  // happened, rather than the section flapping open again.
+  if (!animate) {
+    dom.list.classList.add('no-fold-anim');
+    applyCollapsed();
+    // Two frames: one for the class to apply, one for the layout to
+    // settle at the new size before transitions are allowed back.
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      dom.list.classList.remove('no-fold-anim');
+    }));
+    return;
+  }
   applyCollapsed();
 }
 
