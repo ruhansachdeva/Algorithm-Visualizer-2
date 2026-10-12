@@ -1350,6 +1350,11 @@ body.truncated .note { color: var(--c-swap); }
   display: grid;
   place-items: center;
   width: 26px;
+  /* The heading's padding is top-heavy (13px against 6px), so its text
+     sits 3.5px below the middle of the row. Matching that padding puts
+     the mark on the same line as the category name and the count,
+     instead of centring it in the row and floating above them. */
+  padding: 13px 0 6px;
   margin: 0 4px 0 -2px;
   background: none;
   border: 0;
